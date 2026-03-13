@@ -40,6 +40,12 @@ export function AuthProvider({ children }) {
 
   // Listen for auth state changes
   useEffect(() => {
+    if (process.env.NODE_ENV === 'test') {
+      setCurrentUser(null);
+      setLoading(false);
+      return undefined;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);

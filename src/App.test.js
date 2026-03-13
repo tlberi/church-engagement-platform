@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders landing page heading', () => {
+test('renders landing page heading', async () => {
   render(<App />);
-  const heading = screen.getByText(/Church Engagement/i);
+  const heading = await screen.findByText(/Church Engagement/i);
   expect(heading).toBeInTheDocument();
 });
