@@ -1,4 +1,4 @@
-toimport { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 
@@ -13,7 +13,8 @@ export default function Landing() {
     }
   }, [navigate]);
 
-  const handleGetStarted = () => {
+const handleGetStarted = () => {
+    console.log('Get Started clicked! Navigating to /login');
     navigate('/login');
   };
 
@@ -68,13 +69,13 @@ export default function Landing() {
             </span>
             
             {/* Sci-fi glow effects */}
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/30 to-blue-500/30 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent -skew-x-12 -rotate-3 blur-md animate-shimmer opacity-75"></div>
-            <div className="absolute -inset-2 bg-gradient-radial from-emerald-400 to-blue-500 rounded-3xl blur-xl opacity-30 animate-pulse"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/30 to-blue-500/30 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent -skew-x-12 -rotate-3 blur-md animate-shimmer opacity-75 pointer-events-none"></div>
+            <div className="absolute -inset-2 bg-gradient-radial from-emerald-400 to-blue-500 rounded-3xl blur-xl opacity-30 animate-pulse pointer-events-none"></div>
           </button>
           
           {/* Pulse ring */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/30 via-blue-500/30 to-purple-500/30 rounded-3xl blur-3xl opacity-0 group-hover:opacity-100 transition-all duration-700 animate-ping"></div>
+          <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/30 via-blue-500/30 to-purple-500/30 rounded-3xl blur-3xl opacity-0 group-hover:opacity-100 transition-all duration-700 animate-ping pointer-events-none"></div>
         </div>
 
         {/* Features grid */}
