@@ -3,9 +3,9 @@ import QRCode from 'qrcode';
 // Generate QR code for a service/event
 export async function generateServiceQR(serviceId, orgId) {
   try {
-    // Create check-in URL
-    const baseUrl = window.location.origin;
-    const checkInUrl = `${baseUrl}/checkin/${orgId}/${serviceId}`;
+    // Create check-in URL - supports production URLs
+    const publicUrl = process.env.REACT_APP_PUBLIC_URL || window.location.origin;
+    const checkInUrl = `${publicUrl}/checkin/${orgId}/${serviceId}`;
     
     // Generate QR code as data URL
     const qrCodeDataUrl = await QRCode.toDataURL(checkInUrl, {
@@ -46,3 +46,4 @@ export async function downloadQRCode(serviceId, orgId, eventName) {
     throw error;
   }
 }
+

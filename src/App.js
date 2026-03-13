@@ -1,5 +1,6 @@
 import Attendance from './pages/Attendance';
 import Growth from './pages/Growth';
+import QRCheckIn from './pages/QRCheckIn';
 import Landing from './pages/Landing';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -82,7 +83,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route path="/checkin/:orgId/:serviceId" element={<div>QR Check-in Coming Soon</div>} />
+          <Route path="/checkin/:orgId/:serviceId" element={<QRCheckIn />} />
         </Routes>
       </Router>
     </AuthProvider>
