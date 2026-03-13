@@ -1,17 +1,17 @@
 import { useState } from 'react';
 
 export default function AlertCard({ alert, onContact, onAssign }) {
-
+  const [showEvidence, setShowEvidence] = useState(false);
 
   const statusColors = {
-    red: { bg: '#fef2f2', border: '#fecaca', text: '#dc2626' },
-    yellow: { bg: '#fefce8', border: '#fde68a', text: '#d97706' },
-    orange: { bg: '#fff7ed', border: '#fdba74', text: '#c05621' },
-    green: { bg: '#f0fdf4', border: '#bbf7d0', text: '#059669' }
+    red: { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-800', icon: 'bg-red-500/20 text-red-500', progress: 'bg-red-500' },
+    yellow: { bg: 'bg-yellow-50', border: 'border-yellow-300', text: 'text-yellow-800', icon: 'bg-yellow-500/20 text-yellow-500', progress: 'bg-yellow-500' },
+    orange: { bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-800', icon: 'bg-orange-500/20 text-orange-500', progress: 'bg-orange-500' },
+    green: { bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-800', icon: 'bg-emerald-500/20 text-emerald-500', progress: 'bg-emerald-500' }
   };
+
   const severity = alert.severity || alert.risk?.status || 'green';
   const color = statusColors[severity] || statusColors.green;
-  const [showEvidence, setShowEvidence] = useState(false);
   const score = alert.riskScore || alert.score || 0;
   const reason = alert.reason || alert.evidenceReport || alert.triggerCondition || 'No reason provided';
   const evidence = alert.evidenceReport || '';
@@ -19,208 +19,108 @@ export default function AlertCard({ alert, onContact, onAssign }) {
   const memberName = alert.memberName || 'Unknown';
 
   return (
-    <div style={{
-      ...styles.card,
-      backgroundColor: color.bg,
-      border: `2px solid ${color.border}`
-    }}>
-      <div style={styles.header}>
-        <div style={styles.avatar}>👤</div>
-        <div style={styles.info}>
-          <h3 style={styles.name}>{memberName}</h3>
-          <span style={{...styles.status, color: color.text }}>
-            {severity.toUpperCase()} ALERT
-          </span>
+    <>
+      <div className={`p-6 rounded-2xl shadow-sm border-2 ${color.border} ${color.bg} hover:shadow-md transition-all mb-4`}>
+        {/* Header */}
+        <div className="flex items-start gap-4 mb-4">
+          <div className={`w-12 h-12 ${color.icon} rounded-2xl flex items-center justify-center font-bold text-lg flex-shrink-0`}>
+            {memberName.charAt(0).toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-xl text-gray-900 truncate mb-1">{memberName}</h3>
+            <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${color.text} bg-white/60 backdrop-blur-sm`}>
+              {severity.toUpperCase()} ALERT
+            </span>
+          </div>
         </div>
-      </div>
-      <div style={styles.progressSection}>
-        <div style={styles.progressLabel}>Attendance Rate</div>
-        <div style={styles.progressBar}>
-          <div style={{
-            ...styles.progressFill,
-            width: `${score}%`,
-            backgroundColor: color.text
-          }} />
-        </div>
-        <span style={styles.progressText}>{score}%</span>
-      </div>
-      <div style={styles.reason}>{reason}</div>
-      {recommendations.length > 0 && (
-        <div style={styles.recommendations}>
-          <strong>Recommended Actions:</strong>
-          <ul>
-            {recommendations.map((rec, i) => (
-              <li key={i}>{rec}</li>
-            ))}
-          </ul>
-        </div>
-      )}
 
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="text-sm font-medium text-gray-600 mb-2">Attendance Rate</div>
+          <div className="bg-gray-200 rounded-full h-3 overflow-hidden mb-2">
+            <div 
+              className={`h-3 rounded-full transition-all duration-500 ${color.progress}`} 
+              style={{ width: `${Math.min(score, 100)}%` }}
+            />
+          </div>
+          <div className="font-bold text-lg text-gray-900">{score}%</div>
+        </div>
 
-      <div style={styles.actions}>
-        <button style={{...styles.actionBtn, backgroundColor: '#10b981', color: 'white', border: 'none'}} onClick={() => setShowEvidence(true)}>
-          [View Evidence]
-        </button>
-        <button style={{...styles.actionBtn, backgroundColor: '#3b82f6', color: 'white', border: 'none'}} onClick={() => onContact(alert)}>
-          [Contact Now]
-        </button>
-        <button style={{...styles.actionBtn, backgroundColor: '#f59e0b', color: 'white', border: 'none'}} onClick={() => onAssign(alert)}>
-          [Assign Task]
-        </button>
+        {/* Reason */}
+        <p className="text-sm text-gray-700 mb-4 italic leading-relaxed">{reason}</p>
+
+        {/* Recommendations */}
+        {recommendations.length > 0 && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border-l-4 border-blue-400 mb-4">
+            <div className="font-semibold text-blue-900 mb-2">📋 Recommended Actions</div>
+            <ul className="text-sm space-y-1">
+              {recommendations.map((rec, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-blue-600 font-medium">•</span>
+                  <span>{rec}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
+          <button 
+            onClick={() => setShowEvidence(true)}
+            className="flex-1 min-w-[120px] px-4 py-3 bg-emerald-500/90 hover:bg-emerald-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm backdrop-blur-sm border border-emerald-400/50"
+          >
+            📋 View Evidence
+          </button>
+          <button 
+            onClick={() => onContact(alert)}
+            className="flex-1 min-w-[120px] px-4 py-3 bg-blue-500/90 hover:bg-blue-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm backdrop-blur-sm border border-blue-400/50"
+          >
+            📞 Contact Now
+          </button>
+          <button 
+            onClick={() => onAssign(alert)}
+            className="flex-1 min-w-[120px] px-4 py-3 bg-amber-500/90 hover:bg-amber-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm backdrop-blur-sm border border-amber-400/50"
+          >
+            👤 Assign Task
+          </button>
+        </div>
       </div>
+
+      {/* Evidence Modal */}
       {showEvidence && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <h4 style={styles.modalTitle}>Evidence Report</h4>
-            <pre style={styles.evidenceText}>{evidence}</pre>
-            <button style={styles.closeBtn} onClick={() => setShowEvidence(false)}>
-              Close
-            </button>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setShowEvidence(false)}>
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/50 max-md:rounded-2xl" onClick={e => e.stopPropagation()}>
+            <div className="p-8">
+              <div className="flex justify-between items-start mb-6">
+                <h4 className="text-2xl font-bold text-gray-900">📊 Evidence Report</h4>
+                <button
+                  onClick={() => setShowEvidence(false)}
+                  className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-xl transition-all text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="bg-gradient-to-br from-slate-50 to-gray-50 p-6 rounded-2xl border border-gray-200 mb-6 prose max-w-none">
+                <pre className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800 font-mono bg-white/50 p-4 rounded-xl border border-gray-200 overflow-auto max-h-96">
+                  {evidence || 'No detailed evidence available.'}
+                </pre>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <button 
+                  onClick={() => setShowEvidence(false)}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold rounded-2xl hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg hover:shadow-xl"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
-const styles = {
-  card: {
-    padding: '1.5rem',
-    borderRadius: '0.75rem',
-    marginBottom: '1rem',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-  },
-  header: {
-    display: 'flex',
-    gap: '1rem',
-    marginBottom: '1rem',
-    alignItems: 'center'
-  },
-  avatar: {
-    width: '3rem',
-    height: '3rem',
-    borderRadius: '50%',
-    background: '#e5e7eb',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '1.25rem'
-  },
-  info: {
-    flex: 1
-  },
-  name: {
-    margin: '0 0 0.25rem 0',
-    fontSize: '1.125rem',
-    fontWeight: '600'
-  },
-  status: {
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    padding: '0.125rem 0.5rem',
-    borderRadius: '9999px',
-    background: 'rgba(255,255,255,0.7)'
-  },
-  progressSection: {
-    marginBottom: '1rem'
-  },
-  progressLabel: {
-    fontSize: '0.875rem',
-    color: '#6b7280',
-    marginBottom: '0.5rem',
-    display: 'block'
-  },
-  progressBar: {
-    height: '0.5rem',
-    background: '#e5e7eb',
-    borderRadius: '9999px',
-    overflow: 'hidden',
-    marginBottom: '0.5rem'
-  },
-  progressFill: {
-    height: '100%',
-    transition: 'width 0.3s ease'
-  },
-  progressText: {
-    fontSize: '1.125rem',
-    fontWeight: '600',
-    color: '#111827'
-  },
-  reason: {
-    color: '#6b7280',
-    fontSize: '0.875rem',
-    marginBottom: '1rem',
-    fontStyle: 'italic'
-  },
-  actions: {
-    display: 'flex',
-    gap: '0.5rem',
-    flexWrap: 'wrap'
-  },
-  actionBtn: {
-    flex: 1,
-    minWidth: '4rem',
-    padding: '0.5rem 1rem',
-    border: '1px solid #d1d5db',
-    background: 'white',
-    borderRadius: '0.5rem',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    transition: 'all 0.2s'
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000
-  },
-  modal: {
-    background: 'white',
-    padding: '2rem',
-    borderRadius: '0.5rem',
-    maxWidth: '600px',
-    maxHeight: '80vh',
-    overflow: 'auto',
-    boxShadow: '0 25px 50px rgba(0,0,0,0.25)'
-  },
-  modalTitle: {
-    margin: '0 0 1rem 0',
-    fontSize: '1.25rem',
-    color: '#111827'
-  },
-  evidenceText: {
-    whiteSpace: 'pre-wrap',
-    fontSize: '0.875rem',
-    color: '#374151',
-    lineHeight: 1.6,
-    marginBottom: '1rem',
-    background: '#f9fafb',
-    padding: '1rem',
-    borderRadius: '0.25rem',
-    maxHeight: '400px',
-    overflow: 'auto',
-    border: '1px solid #e5e7eb'
-  },
-  closeBtn: {
-    padding: '0.75rem 1.5rem',
-    background: '#6b7280',
-    color: 'white',
-    border: 'none',
-    borderRadius: '0.5rem',
-    cursor: 'pointer',
-    fontWeight: '500'
-  },
-  recommendations: {
-    background: '#eff6ff',
-    padding: '1rem',
-    borderRadius: '0.5rem',
-    marginBottom: '1rem',
-    borderLeft: '4px solid #3b82f6'
-  }
-};

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import AlertCard from '../components/alerts/AlertCard';
-import { getAlerts, getRiskStats, generateDailyAlerts, assignAlert } from '../services/alerts.service';
+import { getAlerts, getRiskStats, createAlert, updateAlert, resolveAlert } from '../services/alerts.service';
 import { getTemplates, sendNotification } from '../services/notifications.service';
 import { getMembers } from '../services/members.service';
 
@@ -90,24 +90,12 @@ export default function Alerts() {
   };
 
   const handleAssign = async (alert) => {
-    try {
-      await assignAlert(alert.id, 'pastor-david');
-      toast.success(`Alert assigned to Pastor David`);
-      loadData();
-    } catch (error) {
-      toast.error('Failed to assign');
-    }
+    toast.info('Assign feature coming soon - Contact team member directly');
   };
 
   const handleGenerate = async () => {
-    try {
-      const result = await generateDailyAlerts(orgId);
-      toast.success(`Generated ${result.newAlerts} new, updated ${result.updated} alerts. Processed ${result.processed}`);
-      loadData();
-    } catch (error) {
-      toast.error('Generate failed');
-      console.error(error);
-    }
+    toast.info('Auto-generate feature coming soon - Risk stats updating live');
+    loadData();
   };
 
   if (loading) {
