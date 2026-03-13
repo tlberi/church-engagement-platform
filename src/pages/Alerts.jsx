@@ -2,21 +2,33 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import AlertCard from '../components/alerts/AlertCard';
-import { getAlerts, getRiskStats } from '../services/alerts.service';
+import { getAlerts, getRiskStats, generateDailyAlerts, assignAlert } from '../services/alerts.service';
+import { getTemplates, sendNotification } from '../services/notifications.service';
 
 export default function Alerts() {
   const { currentUser } = useAuth();
   const [alerts, setAlerts] = useState([]);
-  const [stats, setStats] = useState({ red: 0, yellow: 0, green: 0, total: 0 });
+  const [stats, setStats] = useState({ red: 0, yellow: 0, orange: 0, green: 0, total: 0 });
+  const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('red');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     loadData();
+    loadTemplates();
     const interval = setInterval(loadData, 30000); // Refresh every 30s
     return () => clearInterval(interval);
-  }, []);
+  }, []); 
+
+  const loadTemplates = async () => {
+    try {
+      const t = await getTemplates('alert');
+      setTemplates(t);
+    } catch (error) {
+      console.error('Templates load error:', error);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -36,15 +48,62 @@ export default function Alerts() {
 
   const filteredAlerts = alerts
     .filter(alert => 
-      alert.name.toLowerCase().includes(search.toLowerCase()) &&
-      (activeTab === 'all' || alert.risk.status === activeTab)
+      (alert.memberName || alert.name || '').toLowerCase().includes(search.toLowerCase()) &&
+      (activeTab === 'all' || (alert.severity === activeTab || alert.risk?.status === activeTab))
     );
 
-  const handleAction = (type, member) => {
-    toast(`${type.toUpperCase()} sent to ${member.name}!`, { 
-      icon: type === 'sms' ? '📱' : type === 'email' ? '✉️' : '📞' 
-    });
-    // Future: Integrate SendGrid/Twilio
+  const handleContact = async (alert) => {
+    try {
+      const member = await getMembers('church1').then(m => m.find(mm => mm.id === alert.memberId));
+      if (!member) {
+        toast.error('Member not found');
+        return;
+      }
+
+      const emailTemplate = templates.find(t => t.channel === 'email');
+      const smsTemplate = templates.find(t => t.channel === 'sms');
+
+      if (emailTemplate && member.email) {
+        await sendNotification(emailTemplate.id, member.id, member.email, null, 'email', {
+          memberName: alert.memberName,
+          riskScore: alert.riskScore,
+          org_name: 'Grace Church'
+        });
+      }
+
+      if (smsTemplate && member.phone) {
+        await sendNotification(smsTemplate.id, member.id, null, member.phone, 'sms', {
+          memberName: alert.memberName,
+          org_name: 'Grace Church'
+        });
+      }
+
+      toast.success('Contact notifications sent!');
+    } catch (error) {
+      toast.error('Failed to send contact');
+      console.error(error);
+    }
+  };
+
+  const handleAssign = async (alert) => {
+    try {
+      await assignAlert(alert.id, 'pastor-david');
+      toast.success(`Alert assigned to Pastor David`);
+      loadData();
+    } catch (error) {
+      toast.error('Failed to assign');
+    }
+  };
+
+  const handleGenerate = async () => {
+    try {
+      const result = await generateDailyAlerts();
+      toast.success(`Generated ${result.newAlerts} new, updated ${result.updated} alerts. Processed ${result.processed}`);
+      loadData();
+    } catch (error) {
+      toast.error('Generate failed');
+      console.error(error);
+    }
   };
 
   if (loading) {
@@ -58,21 +117,27 @@ export default function Alerts() {
         <div style={styles.statsGrid}>
           <StatCard label="Critical (Red)" value={stats.red} color="#ef4444" />
           <StatCard label="Warning (Yellow)" value={stats.yellow} color="#f59e0b" />
-          <StatCard label="Safe (Green)" value={stats.green} color="#10b981" />
+          <StatCard label="High Risk (Orange)" value={stats.orange} color="#fb923c" />
+          <StatCard label="Healthy (Green)" value={stats.green} color="#10b981" />
           <StatCard label="Total Members" value={stats.total} color="#6b7280" />
         </div>
       </div>
 
       <div style={styles.controls}>
-        <input
-          type="text"
-          placeholder="Search members..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={styles.search}
-        />
+        <div style={styles.controlRow}>
+          <input
+            type="text"
+            placeholder="Search members..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={styles.search}
+          />
+          <button style={styles.generateBtn} onClick={handleGenerate}>
+            Generate Alerts
+          </button>
+        </div>
         <div style={styles.tabs}>
-          {['all', 'red', 'yellow'].map(tab => (
+          {['all', 'open', 'red', 'yellow', 'orange'].map(tab => (
             <button
               key={tab}
               style={{
@@ -81,7 +146,7 @@ export default function Alerts() {
               }}
               onClick={() => setActiveTab(tab)}
             >
-              {tab.toUpperCase()}
+              {tab === 'open' ? 'Open' : tab.toUpperCase()}
             </button>
           ))}
         </div>
@@ -94,10 +159,11 @@ export default function Alerts() {
           filteredAlerts.map(alert => (
             <AlertCard
               key={alert.id}
-              member={alert}
-              risk={alert.risk}
-              onAction={handleAction}
+              alert={alert}
+              onContact={handleContact}
+              onAssign={handleAssign}
             />
+
           ))
         )}
       </div>
@@ -170,10 +236,26 @@ const styles = {
     borderColor: '#667eea',
     color: '#667eea'
   },
+  controlRow: {
+    display: 'flex',
+    gap: '1rem',
+    alignItems: 'end'
+  },
+  generateBtn: {
+    padding: '0.75rem 1.5rem',
+    background: '#10b981',
+    color: 'white',
+    border: 'none',
+    borderRadius: '0.5rem',
+    cursor: 'pointer',
+    fontWeight: '500',
+    whiteSpace: 'nowrap'
+  },
   alertsList: {
     display: 'flex',
     flexDirection: 'column'
   },
+
   loading: {
     display: 'flex',
     justifyContent: 'center',

@@ -34,7 +34,7 @@ export async function getMembers(orgId) {
     // Populate risk data if not present
     for (const member of members) {
       if (!member.riskStatus) {
-        const { calculateRiskScore } = await import('./alerts.service.js');
+        const { calculateRiskScore } from './alerts.service.js';
         const risk = await calculateRiskScore(member.id);
         member.risk = risk;
       }
