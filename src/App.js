@@ -1,5 +1,5 @@
 import Attendance from './pages/Attendance';
-import Alerts from './pages/Alerts';
+import Growth from './pages/Growth';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
@@ -42,15 +42,23 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          {/* Placeholder routes */}
-         <Route 
-  path="/attendance" 
-  element={
-    <ProtectedRoute>
-      <Attendance />
-    </ProtectedRoute>
-  } 
-/>
+          <Route 
+            path="/growth" 
+            element={
+              <ProtectedRoute>
+                <Growth />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/attendance" 
+            element={
+              <ProtectedRoute>
+                <Attendance />
+              </ProtectedRoute>
+            } 
+          />
+
           <Route 
             path="/alerts" 
             element={
