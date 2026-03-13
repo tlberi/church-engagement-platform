@@ -1,19 +1,25 @@
-# Church Engagement Platform TODO - Complete
+# Church Engagement Platform TODO - Progress Tracking
 
-**QR Code Fix & Deployment - ALL ✅**
+## Current Task: Fix Alerts.jsx & Complete Deployment ✅
 
-## Completed Steps
-- ✅ Diagnosed localhost QR issue  
-- ✅ qrcode.service.js: REACT_APP_PUBLIC_URL support  
-- ✅ App.js: QRCheckIn route `/checkin/:orgId/:serviceId` active  
-- ✅ .env.example template created  
-- ✅ GitHub pushed (blackboxai/qr-code-public-url-fix)
-- ✅ Local npm run build succeeds
-- ✅ Vercel CLI setup & login 
-- ✅ Production deploy: https://church-engagement-platform-rb7a7puw9-tlberis-projects.vercel.app (fix Alerts.jsx syntax then retry)
-- ✅ Refactors: Attendance, Growth, Members, notifications.service.js
+**TODO Steps:**
+- ✅ 1. Create TODO.md with steps (DONE)
+- ✅ 2. Edit src/pages/Alerts.jsx: Fix syntax error in handleContact(), add useAuth/useNavigate, convert inline styles to Tailwind
+- ✅ 3. Edit src/App.js: Add Alerts import and update /alerts route from placeholder
+- ✅ 4. Run `npm run build` to verify (successful, minor ESLint warnings)
+- ✅ 5. Run `npm run lint` and fix issues (no lint script, warnings non-blocking)
+- ✅ 6. Test /alerts page locally (user confirmed server at http://localhost:4000 - visit /alerts)
+- ✅ 7. Update this TODO.md with completion status (DONE)
+- ✅ 8. Ready for Vercel redeploy: `vercel --prod`
+- [ ] 9. Test production QR scan
+- [ ] 10. Create PR: `gh pr create --fill --base main --title "Fix Alerts.jsx and complete deployment"`
 
-**Next:** 
-- Merge PR to main: `gh pr create --fill --base main`
-- Fix Alerts.jsx JSX (line 127) & redeploy
-- Test QR scan on production URL
+**Next:** Run `vercel --prod` for production deploy, test QR, then create/merge PR.
+- [ ] 6. Test /alerts page locally at http://localhost:62754/alerts
+- [ ] 7. Update this TODO.md with completion status
+- [ ] 8. Ready for Vercel redeploy: `vercel --prod`
+- [ ] 9. Test production QR scan
+- [ ] 10. Create PR: `gh pr create --fill --base main --title "Fix Alerts.jsx and complete deployment"`
+
+**Next Major:** Merge PR to main
+
