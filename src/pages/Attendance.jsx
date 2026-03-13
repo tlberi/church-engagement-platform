@@ -363,10 +363,7 @@ export default function Attendance() {
                 <div className="w-64 h-64 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500 mx-auto">
                   QR Preview
                 </div>
-              )}
-            </div>
-a beau            
-            <div className="space-y-3 mb-6">
+              )}\n            </div>\n            <div className="space-y-3 mb-6">
               <p className="text-lg text-gray-700">1. Open your phone camera</p>
               <p className="text-lg text-gray-700">2. Point at this QR code</p>
               <p className="text-lg text-gray-700">3. Tap notification to check in</p>

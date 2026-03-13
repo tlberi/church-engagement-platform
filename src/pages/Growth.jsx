@@ -110,7 +110,7 @@ const Growth = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-<div className="flex items-center gap-4 mb-12 justify-center">
+      <div className="flex items-center gap-4 mb-12 justify-center">
         <button
           onClick={() => window.history.back()}
           className="p-3 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all text-lg font-medium"
@@ -118,13 +118,12 @@ const Growth = () => {
           ← Back
         </button>
         <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-          📈 Growth Tracking Dashboard
+          Growth Tracking Dashboard
         </h1>
       </div>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Track spiritual growth journeys, auto-detect progress, celebrate milestones
-        </p>
-      </div>
+      <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        Track spiritual growth journeys, auto-detect progress, celebrate milestones
+      </p>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
@@ -195,9 +194,9 @@ const Growth = () => {
                   setSelectedMember(null);
                   setMemberProgress(null);
                 }}
-                className="px-6 py-3 bg-gray-100 border border-gray-200 rounded-xl hover:bg-gray-200 transition-all font-medium flex items-center gap-2"
+                className="px-6 py-3 bg-gray-100 border border-gray-100 rounded-xl hover:bg-gray-200 transition-all font-medium flex items-center gap-2"
               >
-                ← Back to Select
+                Back to Select
               </button>
             </div>
             

@@ -150,12 +150,11 @@ export default function Members() {
           ← Back
         </button>
         <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-gray-900 to-slate-700 bg-clip-text text-transparent">
-            👥 Members
+            Members
         </h1>
       </div>
-
-          <p className="text-xl text-slate-600 font-medium">Manage your church community</p>
-        </div>
+      <div className="flex items-center gap-4 mb-8">
+        <p className="text-xl text-slate-600 font-medium">Manage your church community</p>
         <button 
           onClick={handleAddMember}
           className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 active:scale-95 whitespace-nowrap"
@@ -247,4 +246,3 @@ export default function Members() {
     </div>
   );
 }
-

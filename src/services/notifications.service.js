@@ -21,10 +21,7 @@ export async function getTemplates(type = null, channel = null, orgId = ORG_ID) 
 
     const snapshot = await getDocs(q);
     return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch (error) {
-
-    return [];
-  }
+  } catch (error) {\n    toast.error(error.message);\n    console.error(error);\n    return [];\n  }
 }
 
 // Create template
@@ -36,10 +33,7 @@ export async function createTemplate(templateData, orgId = ORG_ID) {
       createdAt: Timestamp.now()
     });
     return { id: docRef.id, ...templateData };
-  } catch (error) {
-
-    throw error;
-  }
+  } catch (error) {\n    toast.error(error.message);\n    throw error;\n  }
 }
 
 // ===== NOTIFICATIONS CRUD =====
@@ -110,7 +104,6 @@ async function sendEmail(toEmail, subject, content, metadata = {}) {
     //   })
     // });
     
-    console.log('📧 EMAIL SENT:', { to: toEmail, subject, content: content.substring(0, 100) + '...' });
     toast.success(`Email sent to ${toEmail}`);
     return true;
   } catch (error) {
@@ -136,7 +129,6 @@ async function sendSMS(toPhone, message, metadata = {}) {
     //   })
     // });
     
-    console.log('📱 SMS SENT:', { to: toPhone, message: message.substring(0, 100) + '...' });
     toast(`SMS sent to ${toPhone}`);
     return true;
   } catch (error) {
@@ -213,7 +205,7 @@ export async function seedDefaultTemplates(orgId = ORG_ID) {
       type: 'alert',
       channel: 'sms',
       subject: '',
-      body: 'Hi {member_name}, we\\u2019ve missed you at church! Join us Sunday? Reply YES to connect. - Grace Church'
+      body: 'Hi {member_name}, we\'ve missed you at church! Join us Sunday? Reply YES to connect. - Grace Church'
     },
     {
       name: 'Red Alert - Member SMS',
