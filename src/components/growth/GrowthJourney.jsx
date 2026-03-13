@@ -1,6 +1,5 @@
 import React from 'react';
 import MilestoneCard from './MilestoneCard';
-import { calculateProgressBarWidth } from '../../utils/progressUtils'; // Optional helper
 
 const GrowthJourney = ({ progressData, onMilestoneToggle, memberName = 'Member', readOnly = false }) => {
   const { plan, overallProgress = 0, autoProgress = {}, completedMilestones = [] } = progressData || {};

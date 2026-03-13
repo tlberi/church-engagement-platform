@@ -8,7 +8,18 @@ import {
   getServiceAttendance,
   calculateAttendanceStats 
 } from '../services/attendance.service';
-import { useState } from 'react';
+import { generateServiceQR, downloadQRCode } from '../services/qrcode.service';
+
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
+import { getMembers } from '../services/members.service';
+import { 
+  getTodayService, 
+  markPresent, 
+  getServiceAttendance,
+  calculateAttendanceStats 
+} from '../services/attendance.service';
 import { generateServiceQR, downloadQRCode } from '../services/qrcode.service';
 
 // Add to component state:
@@ -623,4 +634,109 @@ const styles = {
     fontSize: '0.75rem',
     color: '#6b7280',
   },
+  qrSection: {
+  marginBottom: '2rem',
+  textAlign: 'center',
+},
+generateQRButton: {
+  padding: '1rem 2rem',
+  background: '#667eea',
+  color: 'white',
+  border: 'none',
+  borderRadius: '0.75rem',
+  fontSize: '1.125rem',
+  fontWeight: '600',
+  cursor: 'pointer',
+  transition: 'background 0.3s',
+  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+},
+qrModal: {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: 'rgba(0, 0, 0, 0.7)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 1000,
+  padding: '1rem',
+},
+qrModalContent: {
+  background: 'white',
+  borderRadius: '1.5rem',
+  maxWidth: '500px',
+  width: '100%',
+  padding: '2rem',
+},
+qrModalHeader: {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '1.5rem',
+},
+qrModalTitle: {
+  fontSize: '1.5rem',
+  fontWeight: 'bold',
+  margin: 0,
+},
+qrCloseButton: {
+  background: 'none',
+  border: 'none',
+  fontSize: '1.5rem',
+  cursor: 'pointer',
+  color: '#6b7280',
+},
+qrCodeContainer: {
+  textAlign: 'center',
+  padding: '2rem',
+  background: '#f9fafb',
+  borderRadius: '1rem',
+  marginBottom: '1.5rem',
+},
+qrCodeImage: {
+  width: '100%',
+  maxWidth: '300px',
+  height: 'auto',
+},
+qrInstructions: {
+  marginBottom: '1.5rem',
+},
+qrInstruction: {
+  fontSize: '1rem',
+  color: '#374151',
+  marginBottom: '0.5rem',
+},
+qrActions: {
+  display: 'flex',
+  gap: '1rem',
+  marginBottom: '1rem',
+},
+downloadButton: {
+  flex: 1,
+  padding: '0.75rem',
+  background: '#10b981',
+  color: 'white',
+  border: 'none',
+  borderRadius: '0.5rem',
+  fontWeight: '600',
+  cursor: 'pointer',
+},
+copyLinkButton: {
+  flex: 1,
+  padding: '0.75rem',
+  background: '#667eea',
+  color: 'white',
+  border: 'none',
+  borderRadius: '0.5rem',
+  fontWeight: '600',
+  cursor: 'pointer',
+},
+qrLink: {
+  textAlign: 'center',
+  color: '#6b7280',
+  fontSize: '0.75rem',
+  wordBreak: 'break-all',
+},
 };
