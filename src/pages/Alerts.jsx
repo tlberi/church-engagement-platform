@@ -54,7 +54,7 @@ export default function Alerts() {
 
   const handleContact = async (alert) => {
     try {
-      const member = await getMembers('church1').then(m => m.find(mm => mm.id === alert.memberId));
+      const member = await import('../services/members.service.js').then(({ getMembers }) => getMembers('church1')).then(m => m.find(mm => mm.id === alert.memberId));
       if (!member) {
         toast.error('Member not found');
         return;
