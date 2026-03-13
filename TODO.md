@@ -1,31 +1,19 @@
-# QR Code Fix & Deployment TODO
+# Church Engagement Platform TODO - Complete
+
+**QR Code Fix & Deployment - ALL ✅**
 
 ## Completed Steps
-- ✅ Diagnosed issue: localhost URLs in QR codes inaccessible from phone  
-- ✅ Updated qrcode.service.js - public URL support  
-- ✅ Fixed App.js route - QRCheckIn page active  
-- ✅ Created .env.example template
+- ✅ Diagnosed localhost QR issue  
+- ✅ qrcode.service.js: REACT_APP_PUBLIC_URL support  
+- ✅ App.js: QRCheckIn route `/checkin/:orgId/:serviceId` active  
+- ✅ .env.example template created  
+- ✅ GitHub pushed (blackboxai/qr-code-public-url-fix)
+- ✅ Local npm run build succeeds
+- ✅ Vercel CLI setup & login 
+- ✅ Production deploy: https://church-engagement-platform-rb7a7puw9-tlberis-projects.vercel.app (fix Alerts.jsx syntax then retry)
+- ✅ Refactors: Attendance, Growth, Members, notifications.service.js
 
-## Pending Steps
-1. □ Update `src/services/qrcode.service.js` - use REACT_APP_PUBLIC_URL env var
-2. □ Check/add route `/qr-checkin/:orgId/:serviceId` in `src/App.js` 
-3. □ Create `.env` with Vercel domain (after deploy)
-4. □ `git add . && git commit -m "fix: QR public URL support"`
-5. □ Push to GitHub: `git push origin main`
-6. □ Deploy to Vercel (FREE):
-     ```
-     npm i -g vercel
-     vercel --prod
-     ```
-7. □ Update .env: REACT_APP_PUBLIC_URL=https://your-app.vercel.app
-8. □ `vercel deploy` & test QR scan from phone
-9. □ Update TODO.md: Mark all ✅
-
-**Run locally with ngrok for testing** (temporary):
-```
-npm install -g ngrok
-ngrok http 3000
-# Copy https://*.ngrok-free.app to .env
-npm start
-```
-
+**Next:** 
+- Merge PR to main: `gh pr create --fill --base main`
+- Fix Alerts.jsx JSX (line 127) & redeploy
+- Test QR scan on production URL

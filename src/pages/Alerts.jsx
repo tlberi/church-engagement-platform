@@ -114,14 +114,14 @@ export default function Alerts() {
 <div style={styles.container}>
       <div style={{...styles.header, display: 'flex', alignItems: 'center', gap: '1rem'}}>
         <button onClick={() => window.history.back()} style={{padding: '0.5rem 1rem', background: '#f3f4f6', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontWeight: '500'}}>← Back</button>
-        <h1 style={styles.title}>🚨 Engagement Alerts</h1></div>
-        <div style={styles.statsGrid}>
-          <StatCard label="Critical (Red)" value={stats.red} color="#ef4444" />
-          <StatCard label="Warning (Yellow)" value={stats.yellow} color="#f59e0b" />
-          <StatCard label="High Risk (Orange)" value={stats.orange} color="#fb923c" />
-          <StatCard label="Healthy (Green)" value={stats.green} color="#10b981" />
-          <StatCard label="Total Members" value={stats.total} color="#6b7280" />
-        </div>
+        <h1 style={styles.title}>🚨 Engagement Alerts</h1>
+      </div>
+      <div style={styles.statsGrid}>
+        <StatCard label="Critical (Red)" value={stats.red} color="#ef4444" />
+        <StatCard label="Warning (Yellow)" value={stats.yellow} color="#f59e0b" />
+        <StatCard label="High Risk (Orange)" value={stats.orange} color="#fb923c" />
+        <StatCard label="Healthy (Green)" value={stats.green} color="#10b981" />
+        <StatCard label="Total Members" value={stats.total} color="#6b7280" />
       </div>
 
       <div style={styles.controls}>
@@ -164,7 +164,6 @@ export default function Alerts() {
               onContact={handleContact}
               onAssign={handleAssign}
             />
-
           ))
         )}
       </div>
