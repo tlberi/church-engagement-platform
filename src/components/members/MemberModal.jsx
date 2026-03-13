@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-// import toast from 'react-hot-toast';
 
 const MemberModal = ({ member, onSave, onClose }) => {
   const [formData, setFormData] = useState({
@@ -12,13 +11,22 @@ const MemberModal = ({ member, onSave, onClose }) => {
   });
   const [errors, setErrors] = useState({});
 
+  const toDateInputValue = (value) => {
+    if (!value) return new Date().toISOString().split('T')[0];
+    const date = value?.toDate ? value.toDate() : new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return new Date().toISOString().split('T')[0];
+    }
+    return date.toISOString().split('T')[0];
+  };
+
   useEffect(() => {
     if (member) {
       setFormData({
         name: member.name || '',
         email: member.email || '',
         phone: member.phone || '',
-        joinDate: member.joinDate ? new Date(member.joinDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        joinDate: toDateInputValue(member.joinDate),
         attendanceRate: member.attendanceRate || 100,
         role: member.role || 'member'
       });
@@ -27,7 +35,7 @@ const MemberModal = ({ member, onSave, onClose }) => {
         name: '',
         email: '',
         phone: '',
-        joinDate: new Date().toISOString().split('T')[0],
+        joinDate: toDateInputValue(),
         attendanceRate: 100,
         role: 'member'
       });

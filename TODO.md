@@ -1,25 +1,21 @@
-# Church Engagement Platform TODO - Progress Tracking
+# Fix react-hot-toast PDF Export Error
 
-## Current Task: Fix Alerts.jsx & Complete Deployment ✅
+## Plan Progress
+- [x] Understand files & root cause (inconsistent imports)
+- [x] Get user approval
+- [x] Step 1: Fix import in src/pages/QRCheckIn.jsx ✅
+- [x] Step 2: Clean up commented imports ✅
+- [ ] Step 3: Test & restart dev server  
+- [ ] Step 4: Complete task
 
-**TODO Steps:**
-- ✅ 1. Create TODO.md with steps (DONE)
-- ✅ 2. Edit src/pages/Alerts.jsx: Fix syntax error in handleContact(), add useAuth/useNavigate, convert inline styles to Tailwind
-- ✅ 3. Edit src/App.js: Add Alerts import and update /alerts route from placeholder
-- ✅ 4. Run `npm run build` to verify (successful, minor ESLint warnings)
-- ✅ 5. Run `npm run lint` and fix issues (no lint script, warnings non-blocking)
-- ✅ 6. Test /alerts page locally (user confirmed server at http://localhost:4000 - visit /alerts)
-- ✅ 7. Update this TODO.md with completion status (DONE)
-- ✅ 8. Ready for Vercel redeploy: `vercel --prod`
-- [ ] 9. Test production QR scan
-- [ ] 10. Create PR: `gh pr create --fill --base main --title "Fix Alerts.jsx and complete deployment"`
+## Files Fixed
+- ✅ src/pages/QRCheckIn.jsx (import toast → { toast })
+- ✅ src/components/members/MemberCard.jsx (removed comment)
+- ✅ src/components/members/MemberModal.jsx (removed comment)
 
-**Next:** Run `vercel --prod` for production deploy, test QR, then create/merge PR.
-- [ ] 6. Test /alerts page locally at http://localhost:62754/alerts
-- [ ] 7. Update this TODO.md with completion status
-- [ ] 8. Ready for Vercel redeploy: `vercel --prod`
-- [ ] 9. Test production QR scan
-- [ ] 10. Create PR: `gh pr create --fill --base main --title "Fix Alerts.jsx and complete deployment"`
-
-**Next Major:** Merge PR to main
+## Test Steps
+1. Run `npm start`
+2. Go to Reports page  
+3. Click "📄 Export PDF" button → Should show toast without error
+4. Test QRCheckIn page toast functions
 

@@ -1,13 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import toast from 'react-hot-toast';
+import { cn } from '../../utils/cn';
+import { toast } from 'react-hot-toast';
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Responsive detection
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   async function handleLogout() {
     try {
@@ -26,47 +39,67 @@ export default function Layout({ children }) {
   const menuItems = [
     { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
     { path: '/members', icon: '👥', label: 'Members' },
+    { path: '/growth', icon: '📈', label: 'Growth' },
     { path: '/attendance', icon: '✅', label: 'Attendance' },
     { path: '/alerts', icon: '🚨', label: 'Alerts' },
     { path: '/reports', icon: '📊', label: 'Reports' },
   ];
 
   return (
-    <div style={styles.container}>
+    <div className="min-h-screen bg-gray-50 font-sans">
       {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerContent}>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className={cn(
+          "flex items-center justify-between px-6 py-4 max-w-full",
+          isDesktop ? 'px-6' : 'px-4'
+        )}>
           {/* Mobile menu button */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            style={styles.menuButton}
+            className={cn(
+              "p-2 bg-transparent border-none text-2xl cursor-pointer text-gray-700 block md:hidden",
+              isDesktop && 'hidden'
+            )}
           >
             ☰
           </button>
 
           {/* Logo */}
-          <div style={styles.logo}>
-            <span style={styles.logoIcon}>⛪</span>
-            <span style={styles.logoText}>Church Platform</span>
+          <div className="flex items-center gap-3 flex-1 justify-center">
+            <span className="text-3xl">⛪</span>
+            <span className={cn(
+              "text-xl font-bold text-gray-900",
+              isDesktop ? 'block' : 'hidden md:block'
+            )}>
+              Church Platform
+            </span>
           </div>
 
           {/* User menu */}
-          <div style={styles.userMenu}>
-            <span style={styles.userEmail}>{currentUser?.email}</span>
-            <button onClick={handleLogout} style={styles.logoutButton}>
+          <div className={cn(
+            "flex items-center gap-4",
+            isDesktop ? 'block' : 'hidden md:flex'
+          )}>
+            <span className="text-sm text-gray-500">
+              {currentUser?.email}
+            </span>
+            <button 
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-500 text-white border-none rounded-lg text-sm font-semibold cursor-pointer hover:bg-red-600 transition-colors"
+            >
               Logout
             </button>
           </div>
         </div>
       </header>
 
-      <div style={styles.main}>
+      <div className="flex relative">
         {/* Sidebar */}
-        <aside style={{
-          ...styles.sidebar,
-          transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
-        }}>
-          <nav style={styles.nav}>
+        <aside className={cn(
+          "fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out z-30 md:translate-x-0",
+          isDesktop || sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        )}>
+          <nav className="flex-1 p-4 overflow-y-auto">
             {menuItems.map(item => (
               <button
                 key={item.path}
@@ -74,44 +107,37 @@ export default function Layout({ children }) {
                   navigate(item.path);
                   setSidebarOpen(false);
                 }}
-                style={{
-                  ...styles.navItem,
-                  ...(isActive(item.path) ? styles.navItemActive : {})
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive(item.path)) {
-                    e.target.style.background = '#f3f4f6';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive(item.path)) {
-                    e.target.style.background = 'transparent';
-                  }
-                }}
+                className={cn(
+                  "w-full flex items-center gap-3 p-3 bg-transparent border-none text-base text-gray-700 cursor-pointer transition-colors text-left rounded-lg hover:bg-gray-100",
+                  isActive(item.path) && "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-600"
+                )}
               >
-                <span style={styles.navIcon}>{item.icon}</span>
-                <span style={styles.navLabel}>{item.label}</span>
+                <span className="text-xl">{item.icon}</span>
+                <span>{item.label}</span>
               </button>
             ))}
           </nav>
 
           {/* Version info */}
-          <div style={styles.sidebarFooter}>
-            <div style={styles.versionText}>v1.0.0</div>
-            <div style={styles.statusText}>✅ All systems operational</div>
+          <div className="p-6 border-t border-gray-200">
+            <div className="text-xs text-gray-500 mb-1">v1.0.0</div>
+            <div className="text-xs text-green-600 font-medium">✅ All systems operational</div>
           </div>
         </aside>
 
         {/* Overlay for mobile */}
-        {sidebarOpen && (
+        {sidebarOpen && !isDesktop && (
           <div
-            style={styles.overlay}
+            className="fixed inset-0 bg-black/50 z-20 md:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         {/* Main content */}
-        <main style={styles.content}>
+        <main className={cn(
+          "flex-1 min-h-[calc(100vh-4rem)] transition-all duration-300",
+          isDesktop ? 'ml-64' : 'ml-0'
+        )}>
           {children}
         </main>
       </div>
@@ -119,161 +145,3 @@ export default function Layout({ children }) {
   );
 }
 
-const styles = {
-  container: {
-    minHeight: '100vh',
-    background: '#f9fafb',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  },
-  header: {
-    background: 'white',
-    borderBottom: '1px solid #e5e7eb',
-    position: 'sticky',
-    top: 0,
-    zIndex: 40,
-  },
-  headerContent: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '1rem 1.5rem',
-    maxWidth: '100%',
-  },
-  menuButton: {
-    display: 'block',
-    padding: '0.5rem',
-    background: 'none',
-    border: 'none',
-    fontSize: '1.5rem',
-    cursor: 'pointer',
-    color: '#374151',
-  },
-  logo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  logoIcon: {
-    fontSize: '1.75rem',
-  },
-  logoText: {
-    fontSize: '1.25rem',
-    fontWeight: 'bold',
-    color: '#111827',
-    display: 'none',
-  },
-  userMenu: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
-  },
-  userEmail: {
-    fontSize: '0.875rem',
-    color: '#6b7280',
-    display: 'none',
-  },
-  logoutButton: {
-    padding: '0.5rem 1rem',
-    background: '#ef4444',
-    color: 'white',
-    border: 'none',
-    borderRadius: '0.375rem',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  main: {
-    display: 'flex',
-    position: 'relative',
-  },
-  sidebar: {
-    position: 'fixed',
-    left: 0,
-    top: '64px',
-    bottom: 0,
-    width: '16rem',
-    background: 'white',
-    borderRight: '1px solid #e5e7eb',
-    display: 'flex',
-    flexDirection: 'column',
-    transition: 'transform 0.3s ease',
-    zIndex: 30,
-  },
-  nav: {
-    flex: 1,
-    padding: '1rem 0',
-    overflowY: 'auto',
-  },
-  navItem: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.75rem 1.5rem',
-    background: 'transparent',
-    border: 'none',
-    fontSize: '0.95rem',
-    color: '#374151',
-    cursor: 'pointer',
-    transition: 'background 0.2s',
-    textAlign: 'left',
-  },
-  navItemActive: {
-    background: '#eff6ff',
-    color: '#667eea',
-    fontWeight: '600',
-    borderLeft: '3px solid #667eea',
-  },
-  navIcon: {
-    fontSize: '1.25rem',
-  },
-  navLabel: {
-    fontSize: '0.95rem',
-  },
-  sidebarFooter: {
-    padding: '1rem 1.5rem',
-    borderTop: '1px solid #e5e7eb',
-  },
-  versionText: {
-    fontSize: '0.75rem',
-    color: '#9ca3af',
-    marginBottom: '0.25rem',
-  },
-  statusText: {
-    fontSize: '0.75rem',
-    color: '#10b981',
-  },
-  overlay: {
-    position: 'fixed',
-    inset: 0,
-    background: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 20,
-  },
-  content: {
-    flex: 1,
-    marginLeft: '0',
-    minHeight: 'calc(100vh - 64px)',
-  },
-};
-
-// Apply responsive styles based on screen size
-function updateStyles() {
-  if (window.innerWidth >= 768) {
-    styles.menuButton.display = 'none';
-    styles.logoText.display = 'block';
-    styles.userEmail.display = 'block';
-    styles.sidebar.transform = 'translateX(0)';
-    styles.content.marginLeft = '16rem';
-  } else {
-    styles.menuButton.display = 'block';
-    styles.logoText.display = 'none';
-    styles.userEmail.display = 'none';
-    styles.sidebar.transform = 'translateX(-100%)';
-    styles.content.marginLeft = '0';
-  }
-}
-
-updateStyles();
-window.addEventListener('resize', updateStyles);

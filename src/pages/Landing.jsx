@@ -1,21 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Toaster } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     // Auto-redirect if already logged in
-    const user = localStorage.getItem('user');
-    if (user) {
+    if (currentUser) {
       navigate('/dashboard');
     }
-  }, [navigate]);
+  }, [currentUser, navigate]);
 
-const handleGetStarted = () => {
-    console.log('Get Started clicked! Navigating to /login');
-    navigate('/login');
+  const handleGetStarted = () => {
+    navigate(currentUser ? '/dashboard' : '/login');
   };
 
   return (
@@ -28,8 +27,6 @@ const handleGetStarted = () => {
         <div className="absolute bottom-20 left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-10 w-48 h-48 bg-emerald-500/5 rounded-full blur-xl animate-bounce"></div>
       </div>
-
-      <Toaster position="top-center" />
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 py-12 lg:px-8 text-center text-white">
         {/* Church Icon */}
@@ -107,7 +104,7 @@ const handleGetStarted = () => {
       </div>
 
       {/* Custom CSS for shimmer */}
-      <style jsx>{`
+      <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%) skew-x(-12deg); }
           100% { transform: translateX(100%) skew-x(-12deg); }

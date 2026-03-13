@@ -6,16 +6,16 @@ import {
   getDocs,
   query,
   where,
-  Timestamp 
+  Timestamp,
+  limit
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { getMembers } from './members.service';
-import { getServiceAttendance } from './attendance.service';
 import toast from 'react-hot-toast';
 
 const GROWTH_PLANS_COLLECTION = 'growthPlans';
 const MEMBER_PROGRESS_COLLECTION = 'memberProgress';
-const ORG_ID = 'church1'; // Demo - use currentUser.email in prod
+const ORG_ID = 'demo-org'; // Demo default
 
 /**
  * Get all growth plans for organization
@@ -37,11 +37,11 @@ export async function getGrowthPlans(orgId = ORG_ID) {
 /**
  * Add new growth plan
  */
-export async function addGrowthPlan(planData) {
+export async function addGrowthPlan(planData, orgId = ORG_ID) {
   try {
     const docRef = await addDoc(collection(db, GROWTH_PLANS_COLLECTION), {
       ...planData,
-      orgId: ORG_ID,
+      orgId,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now()
     });
@@ -76,12 +76,12 @@ export async function updateGrowthPlan(planId, updates) {
 export async function getMemberProgress(memberId, planId, orgId = ORG_ID) {
   try {
     // Get progress record
-    let q = query(
+    const q = query(
       collection(db, MEMBER_PROGRESS_COLLECTION),
       where('memberId', '==', memberId),
       where('planId', '==', planId),
       where('orgId', '==', orgId),
-      query.limit(1)
+      limit(1)
     );
     const snapshot = await getDocs(q);
     
@@ -138,28 +138,44 @@ export async function updateMemberProgress(memberId, planId, milestoneId, comple
     const existingQuery = query(
       collection(db, MEMBER_PROGRESS_COLLECTION),
       where('memberId', '==', memberId),
-      where('planId', '==', planId)
+      where('planId', '==', planId),
+      where('orgId', '==', orgId),
+      limit(1)
     );
     const snapshot = await getDocs(existingQuery);
     
     if (!snapshot.empty) {
       const existing = snapshot.docs[0].data();
       progressData = { ...existing };
-      if (completed && !progressData.completedMilestones.includes(milestoneId)) {
-        progressData.completedMilestones.push(milestoneId);
-        progressData.currentMilestoneIndex++;
-      } else if (!completed) {
-        progressData.completedMilestones = progressData.completedMilestones.filter(id => id !== milestoneId);
-        progressData.currentMilestoneIndex--;
-      }
     }
+
+    const isReset = !milestoneId && completed === false;
+    let completedMilestones = Array.isArray(progressData.completedMilestones)
+      ? progressData.completedMilestones
+      : [];
+
+    if (isReset) {
+      completedMilestones = [];
+      progressData.currentMilestoneIndex = 0;
+    } else if (completed && milestoneId && !completedMilestones.includes(milestoneId)) {
+      completedMilestones.push(milestoneId);
+      progressData.currentMilestoneIndex = (progressData.currentMilestoneIndex || 0) + 1;
+    } else if (!completed && milestoneId && completedMilestones.includes(milestoneId)) {
+      progressData.currentMilestoneIndex = Math.max((progressData.currentMilestoneIndex || 0) - 1, 0);
+      completedMilestones = completedMilestones.filter(id => id !== milestoneId);
+    }
+
+    progressData.completedMilestones = completedMilestones;
 
     // Recalculate progress
     const plans = await getGrowthPlans(orgId);
     const plan = plans.find(p => p.id === planId);
     if (plan) {
-      const total = plan.milestones.length;
-      progressData.progress = Math.round((progressData.completedMilestones.length / total) * 100);
+      const total = plan.milestones.length || 1;
+      const completedCount = Array.isArray(progressData.completedMilestones)
+        ? progressData.completedMilestones.length
+        : 0;
+      progressData.progress = isReset ? 0 : Math.round((completedCount / total) * 100);
     }
 
     const progressRef = snapshot.empty 
@@ -247,7 +263,7 @@ export async function seedDefaultNewMemberJourney(orgId = ORG_ID) {
       ]
     };
 
-    await addGrowthPlan(defaultPlan);
+    await addGrowthPlan(defaultPlan, orgId);
     toast.success('New Member Journey seeded!');
   } catch (error) {
     toast.error('Failed to seed default plan');

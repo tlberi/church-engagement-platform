@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 
 const NOTIFICATIONS_COLLECTION = 'notifications';
 const TEMPLATES_COLLECTION = 'notification_templates';
-const ORG_ID = 'church1';
+const ORG_ID = 'demo-org';
 
 export async function getTemplates(type = null, channel = null, orgId = ORG_ID) {
   try {
@@ -105,9 +105,9 @@ async function sendSMS(toPhone, message, metadata = {}) {
   }
 }
 
-export async function sendNotification(templateId, recipientId, recipientEmail, recipientPhone, channel, metadata = {}) {
+export async function sendNotification(templateId, recipientId, recipientEmail, recipientPhone, channel, metadata = {}, orgId = ORG_ID) {
   try {
-    const templates = await getTemplates('alert', channel);
+    const templates = await getTemplates('alert', channel, orgId);
     const template = templates.find(t => t.id === templateId);
     if (!template) throw new Error('Template not found');
 
@@ -134,7 +134,7 @@ export async function sendNotification(templateId, recipientId, recipientEmail, 
       metadata,
       scheduledFor: Timestamp.now()
     };
-    const notification = await createNotification(notificationData);
+    const notification = await createNotification(notificationData, orgId);
 
     let sent = false;
     if (channel === 'email' || channel === 'both') {

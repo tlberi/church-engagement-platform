@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { 
   getMembers, 
   addMember, 
@@ -10,6 +10,7 @@ import {
 } from '../services/members.service';
 import MemberCard from '../components/members/MemberCard';
 import MemberModal from '../components/members/MemberModal';
+import { getOrgId } from '../utils/org';
 
 export default function Members() {
   const { currentUser } = useAuth();
@@ -21,7 +22,7 @@ export default function Members() {
   const [editingMember, setEditingMember] = useState(null);
   const [stats, setStats] = useState({ total: 0, active: 0, atRisk: 0, averageAttendance: 0 });
 
-  const orgId = currentUser?.email?.split('@')[0] || 'demo-org';
+  const orgId = getOrgId(currentUser);
 
   // Load members with callback for memoization
   const loadMembers = useCallback(async () => {
@@ -69,8 +70,8 @@ export default function Members() {
       setFilteredMembers(members);
     } else {
       const filtered = members.filter(member =>
-        member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (member.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (member.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (member.phone || '').includes(searchTerm)
       );
       setFilteredMembers(filtered);

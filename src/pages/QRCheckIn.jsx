@@ -1,23 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { getMembers } from '../services/members.service';
 import { markPresent, getServiceAttendance } from '../services/attendance.service';
 
 export default function QRCheckIn() {
   const { orgId, serviceId } = useParams();
-  const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMember, setSelectedMember] = useState(null);
   const [checking, setChecking] = useState(false);
   const [alreadyCheckedIn, setAlreadyCheckedIn] = useState([]);
 
-  useEffect(() => {
-    loadData();
-  }, [orgId, serviceId]);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     try {
       const membersData = await getMembers(orgId);
       setMembers(membersData);
@@ -28,24 +22,29 @@ export default function QRCheckIn() {
       console.error('Error loading data:', error);
       toast.error('Failed to load check-in data');
     }
-  }
+  }, [orgId, serviceId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   async function handleCheckIn(member) {
+    const memberName = member?.name || 'Member';
     if (alreadyCheckedIn.includes(member.id)) {
-      toast.error(`${member.name} is already checked in!`);
+      toast.error(`${memberName} is already checked in!`);
       return;
     }
 
     setChecking(true);
     try {
-      await markPresent(serviceId, member.id, member.name);
-      setAlreadyCheckedIn([...alreadyCheckedIn, member.id]);
+      await markPresent(serviceId, member.id, memberName, orgId);
+      setAlreadyCheckedIn((prev) => [...prev, member.id]);
       
       toast.success(
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
           <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
-            Welcome, {member.name}!
+            Welcome, {memberName}!
           </div>
           <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
             You're checked in
@@ -56,7 +55,6 @@ export default function QRCheckIn() {
       
       // Clear selection after 2 seconds
       setTimeout(() => {
-        setSelectedMember(null);
         setSearchTerm('');
       }, 2000);
       
@@ -69,7 +67,7 @@ export default function QRCheckIn() {
   }
 
   const filteredMembers = members.filter(member =>
-    member.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (member.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -116,10 +114,10 @@ export default function QRCheckIn() {
                 }}
               >
                 <div style={styles.memberAvatar}>
-                  {member.name.charAt(0).toUpperCase()}
+                  {(member.name || '?').charAt(0).toUpperCase()}
                 </div>
                 <div style={styles.memberInfo}>
-                  <div style={styles.memberName}>{member.name}</div>
+                  <div style={styles.memberName}>{member.name || 'Unknown'}</div>
                   {isCheckedIn && (
                     <div style={styles.checkedInBadge}>
                       ✅ Already checked in

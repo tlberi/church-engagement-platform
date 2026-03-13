@@ -1,28 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { getRiskStats } from '../services/alerts.service';
-import { Toaster } from 'react-hot-toast';
+import { getOrgId } from '../utils/org';
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [riskStats, setRiskStats] = useState({ red: 0, yellow: 0, orange: 0, green: 0, total: 0 });
   const [loading, setLoading] = useState(true);
+  const orgId = getOrgId(currentUser);
 
-  useEffect(() => {
-    loadStats();
-  }, []);
-
-  async function loadStats() {
+  const loadStats = useCallback(async () => {
     try {
       setLoading(true);
-      const stats = await getRiskStats(currentUser?.email || 'church1');
+      const stats = await getRiskStats(orgId);
       setRiskStats(stats);
     } catch (error) {
       // Stats error handled silently
     } finally {
       setLoading(false);
     }
-  }
+  }, [orgId]);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
 
   if (loading) {
     return (
@@ -54,7 +57,7 @@ export default function Dashboard() {
             <p className="text-4xl font-bold text-blue-600 mb-4">{riskStats.total}</p>
             <p className="text-gray-600 mb-6">total members</p>
             <button
-              onClick={() => window.location.href = '/members'}
+              onClick={() => navigate('/members')}
               className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl"
             >
               Manage Members →
@@ -66,7 +69,7 @@ export default function Dashboard() {
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Attendance</h3>
             <p className="text-3xl font-bold text-emerald-600 mb-6">Today's service tracking</p>
             <button
-              onClick={() => window.location.href = '/attendance'}
+              onClick={() => navigate('/attendance')}
               className="w-full px-6 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 transition-all shadow-lg hover:shadow-xl"
             >
               Take Attendance →
@@ -79,7 +82,7 @@ export default function Dashboard() {
             <p className="text-xl font-bold mb-2">{riskStats.red} critical</p>
             <p className="text-lg text-gray-600 mb-6">{riskStats.yellow + riskStats.orange} warnings</p>
             <button
-              onClick={() => window.location.href = '/alerts'}
+              onClick={() => navigate('/alerts')}
               className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold rounded-xl hover:from-red-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl"
             >
               View Alerts ({riskStats.red + riskStats.yellow + riskStats.orange})
@@ -91,7 +94,7 @@ export default function Dashboard() {
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Growth Tracking</h3>
             <p className="text-3xl font-bold text-amber-600 mb-6">Spiritual growth journeys & milestones</p>
             <button
-              onClick={() => window.location.href = '/growth'}
+              onClick={() => navigate('/growth')}
               className="w-full px-6 py-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition-all shadow-lg hover:shadow-xl"
             >
               Track Growth →
@@ -120,7 +123,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <Toaster position="top-right" />
     </div>
   );
 }

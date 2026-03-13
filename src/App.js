@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Members from './pages/Members';
 import Alerts from './pages/Alerts';
+import Reports from './pages/Reports';
 
 function ProtectedRoute({ children }) {
   const { currentUser } = useAuth();
@@ -74,10 +75,7 @@ function App() {
             path="/reports" 
             element={
               <ProtectedRoute>
-                <div style={{padding: '2rem'}}>
-                  <h1>⏳ Reports - Coming Soon</h1>
-                  <p>We'll build this soon!</p>
-                </div>
+                <Reports />
               </ProtectedRoute>
             } 
           />

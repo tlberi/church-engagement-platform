@@ -12,6 +12,7 @@ const GrowthJourney = ({ progressData, onMilestoneToggle, memberName = 'Member',
     );
   }
 
+  const milestones = plan?.milestones || [];
   const progressWidth = `${Math.min(overallProgress, 100)}%`;
   const isAuto = autoProgress.autoDetected;
 
@@ -31,13 +32,13 @@ const GrowthJourney = ({ progressData, onMilestoneToggle, memberName = 'Member',
           <div style={{ ...styles.progressFill, width: progressWidth }} />
         </div>
         <div style={styles.progressText}>
-          {completedMilestones.length}/{plan.milestones.length} milestones
+          {completedMilestones.length}/{milestones.length} milestones
         </div>
       </div>
 
       {/* Milestones Checklist */}
       <div style={styles.milestones}>
-        {plan.milestones.map((milestone, index) => (
+        {milestones.map((milestone, index) => (
           <MilestoneCard
             key={milestone.id}
             milestone={milestone}

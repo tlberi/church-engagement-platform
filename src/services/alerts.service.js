@@ -17,7 +17,7 @@ import { getMembers } from './members.service';
 const MEMBERS_COLLECTION = 'members';
 const SERVICES_COLLECTION = 'services';
 const ALERTS_COLLECTION = 'alerts';
-const ORG_ID = 'church1'; // Demo organization
+const ORG_ID = 'demo-org'; // Demo organization
 
 // Get recent services (last 12)
 async function getRecentServices(orgId = ORG_ID, count = 52) { // 1 year history for patterns
@@ -54,8 +54,6 @@ export async function calculateRiskScore(memberId, orgId = ORG_ID) {
     let totalAttended = 0;
     let consecMisses = 0;
     let currentStreak = 0;
-    let daysSinceLast = 999;
-    let lastAttendDate = null;
 
     for (const service of services) {
       const attendance = await getServiceAttendance(service.id);
@@ -65,7 +63,7 @@ export async function calculateRiskScore(memberId, orgId = ORG_ID) {
       if (present) {
         totalAttended++;
         currentStreak = 0;
-        lastAttendDate = new Date(service.date);
+        // lastAttendDate = new Date(service.date);
       } else {
         currentStreak++;
         consecMisses = Math.max(consecMisses, currentStreak);
@@ -108,10 +106,14 @@ export async function calculateRiskScore(memberId, orgId = ORG_ID) {
 // Update member's risk fields
 export async function updateMemberRisk(memberId, riskData, orgId = ORG_ID) {
   try {
+    const consecMisses = riskData?.consecMisses ?? riskData?.breakdown?.consecMisses ?? 0;
+    const riskScore = Number.isFinite(riskData?.score) ? riskData.score : 0;
+    const riskStatus = riskData?.riskLevel || riskData?.status || 'green';
+
     const updates = {
-      riskStatus: riskData.riskLevel || riskData.status,
-      riskScore: riskData.score,
-      riskConsecMisses: riskData.consecMisses || 0,
+      riskStatus,
+      riskScore,
+      riskConsecMisses: consecMisses,
       updatedAt: Timestamp.now()
     };
     await updateDoc(doc(db, MEMBERS_COLLECTION, memberId), updates);
@@ -154,17 +156,66 @@ export async function getRiskStats(orgId = ORG_ID) {
 export async function getAlerts(orgId = ORG_ID) {
   try {
     const members = await getMembers(orgId);
-    const alerts = [];
-    
+    const memberById = new Map(members.map(m => [m.id, m]));
+
+    // Load stored alerts from Firestore
+    let storedAlerts = [];
+    try {
+      const alertsQuery = query(
+        collection(db, ALERTS_COLLECTION),
+        where('orgId', '==', orgId),
+        orderBy('createdAt', 'desc')
+      );
+      const snapshot = await getDocs(alertsQuery);
+      storedAlerts = snapshot.docs.map(d => ({
+        id: d.id,
+        ...d.data(),
+        isComputed: false
+      }));
+    } catch (error) {
+      storedAlerts = [];
+    }
+
+    const storedByMemberId = new Set(
+      storedAlerts.map(a => a.memberId).filter(Boolean)
+    );
+
+    const alerts = storedAlerts.map(a => {
+      const member = memberById.get(a.memberId);
+      return {
+        ...member,
+        ...a,
+        memberName: a.memberName || member?.name || 'Unknown'
+      };
+    });
+
+    // Add computed alerts for at-risk members without stored alerts
     for (const member of members) {
       const risk = await calculateRiskScore(member.id, orgId);
-      if (risk.riskLevel !== 'green') {
-        alerts.push({ ...member, risk });
-        await updateMemberRisk(member.id, risk, orgId);
+      if (risk.riskLevel !== 'green' && !storedByMemberId.has(member.id)) {
+        alerts.push({
+          ...member,
+          memberId: member.id,
+          memberName: member.name,
+          severity: risk.riskLevel,
+          riskScore: risk.score,
+          evidenceReport: risk.evidenceReport,
+          recommendations: risk.recommendations,
+          reason: risk.evidenceReport,
+          status: risk.riskLevel,
+          risk,
+          isComputed: true,
+          id: `risk-${member.id}`
+        });
       }
+      await updateMemberRisk(member.id, risk, orgId);
     }
-    
-    return alerts.sort((a, b) => b.risk.score - a.risk.score);
+
+    return alerts.sort((a, b) => {
+      const aScore = a.riskScore || a.risk?.score || 0;
+      const bScore = b.riskScore || b.risk?.score || 0;
+      return bScore - aScore;
+    });
   } catch (error) {
     return [];
   }

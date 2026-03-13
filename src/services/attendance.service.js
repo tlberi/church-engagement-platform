@@ -4,22 +4,26 @@ import {
   getDocs,
   query,
   where,
-  orderBy,
-  Timestamp,
-  updateDoc,
-  doc
+  Timestamp
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
 const ATTENDANCE_COLLECTION = 'attendance';
 const SERVICES_COLLECTION = 'services';
 
+function getLocalDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Create a new service session
 export async function createService(orgId, serviceData) {
   try {
     const docRef = await addDoc(collection(db, SERVICES_COLLECTION), {
       orgId,
-      date: serviceData.date || new Date().toISOString().split('T')[0],
+      date: serviceData.date || getLocalDateString(),
       type: serviceData.type || 'Sunday Service',
       createdAt: Timestamp.now(),
     });
@@ -38,7 +42,7 @@ export async function createService(orgId, serviceData) {
 // Get today's service or create one
 export async function getTodayService(orgId) {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     
     const q = query(
       collection(db, SERVICES_COLLECTION),
@@ -68,7 +72,7 @@ export async function getTodayService(orgId) {
 }
 
 // Mark member as present
-export async function markPresent(serviceId, memberId, memberName) {
+export async function markPresent(serviceId, memberId, memberName, orgId) {
   try {
     const docRef = await addDoc(collection(db, ATTENDANCE_COLLECTION), {
       serviceId,
@@ -81,8 +85,8 @@ export async function markPresent(serviceId, memberId, memberName) {
     // Trigger risk recalc for this member
     try {
       const { calculateRiskScore, updateMemberRisk } = await import('./alerts.service.js');
-      const risk = await calculateRiskScore(memberId);
-      await updateMemberRisk(memberId, risk);
+      const risk = await calculateRiskScore(memberId, orgId);
+      await updateMemberRisk(memberId, risk, orgId);
     } catch (riskError) {
       // Risk update failed silently
     }
@@ -122,7 +126,9 @@ export async function getServiceAttendance(serviceId) {
 
 // Get attendance statistics
 export function calculateAttendanceStats(totalMembers, presentMembers) {
-  const present = presentMembers.length;
+  const present = Array.isArray(presentMembers)
+    ? presentMembers.length
+    : Number(presentMembers) || 0;
   const absent = totalMembers - present;
   const percentage = totalMembers > 0 
     ? ((present / totalMembers) * 100).toFixed(1) 

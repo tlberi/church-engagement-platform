@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 export default function LoginSimple() {
   const [email, setEmail] = useState('');
@@ -9,8 +9,14 @@ export default function LoginSimple() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   
-  const { login, signup } = useAuth();
+  const { login, signup, currentUser } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/dashboard');
+    }
+  }, [currentUser, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -37,8 +43,32 @@ export default function LoginSimple() {
       }
       navigate('/dashboard');
     } catch (error) {
-      console.error(error);
-      toast.error(error.message);
+      console.error('Auth error:', error.code, error.message);
+      let errorMsg = 'Login failed. ';
+      switch (error.code) {
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+          errorMsg += 'Invalid email/password.';
+          break;
+        case 'auth/invalid-email':
+          errorMsg += 'Invalid email address.';
+          break;
+        case 'auth/weak-password':
+          errorMsg += 'Password too weak.';
+          break;
+        case 'auth/email-already-in-use':
+          errorMsg += 'Email already registered. Try login.';
+          break;
+        case 'auth/network-request-failed':
+          errorMsg += 'Network error. Check connection.';
+          break;
+        case 'auth/operation-not-allowed':
+          errorMsg += 'Auth disabled in Firebase. Contact admin.';
+          break;
+        default:
+          errorMsg += error.message;
+      }
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

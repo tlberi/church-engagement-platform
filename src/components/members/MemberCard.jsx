@@ -1,8 +1,17 @@
 import React from 'react';
-// import toast from 'react-hot-toast';
 
 const MemberCard = ({ member, onEdit, onDelete }) => {
-  const attendanceRate = member.attendanceRate || 0;
+  const attendanceRate = Math.min(Math.max(member.attendanceRate || 0, 0), 100);
+  const name = member?.name || 'Unknown';
+  const email = member?.email || 'No email';
+  const joinDateValue = member?.joinDate?.toDate
+    ? member.joinDate.toDate()
+    : member?.joinDate
+      ? new Date(member.joinDate)
+      : null;
+  const joinDateLabel = joinDateValue && !Number.isNaN(joinDateValue.getTime())
+    ? joinDateValue.toLocaleDateString()
+    : null;
 
   const getAttendanceColor = (rate) => {
     if (rate >= 80) return 'bg-emerald-500';
@@ -22,11 +31,11 @@ const MemberCard = ({ member, onEdit, onDelete }) => {
     <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100 group">
       <div className="flex items-start mb-6 gap-4">
         <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-lg">
-          {member.name.charAt(0).toUpperCase()}
+          {name.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors mb-1">
-            {member.name}
+            {name}
           </h3>
           <span className={`inline-flex px-3 py-1 rounded-full text-sm font-semibold border ${status.className}`}>
             {status.text}
@@ -37,7 +46,7 @@ const MemberCard = ({ member, onEdit, onDelete }) => {
       <div className="space-y-3 mb-6">
         <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
           <span className="text-gray-400">📧</span>
-          <span className="text-sm text-gray-700 font-medium truncate">{member.email}</span>
+          <span className="text-sm text-gray-700 font-medium truncate">{email}</span>
         </div>
         {member.phone && (
           <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
@@ -45,10 +54,10 @@ const MemberCard = ({ member, onEdit, onDelete }) => {
             <span className="text-sm text-gray-700 font-medium">{member.phone}</span>
           </div>
         )}
-        {member.joinDate && (
+        {joinDateLabel && (
           <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
             <span className="text-gray-400">📅</span>
-            <span className="text-sm text-gray-700">Joined {new Date(member.joinDate).toLocaleDateString()}</span>
+            <span className="text-sm text-gray-700">Joined {joinDateLabel}</span>
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function AlertCard({ alert, onContact, onAssign }) {
+export default function AlertCard({ alert, onContact, onAssign, onResolve }) {
   const [showEvidence, setShowEvidence] = useState(false);
 
   const statusColors = {
@@ -10,13 +10,13 @@ export default function AlertCard({ alert, onContact, onAssign }) {
     green: { bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-800', icon: 'bg-emerald-500/20 text-emerald-500', progress: 'bg-emerald-500' }
   };
 
-  const severity = alert.severity || alert.risk?.status || 'green';
+  const severity = alert.severity || alert.risk?.riskLevel || alert.risk?.status || 'green';
   const color = statusColors[severity] || statusColors.green;
-  const score = alert.riskScore || alert.score || 0;
-  const reason = alert.reason || alert.evidenceReport || alert.triggerCondition || 'No reason provided';
-  const evidence = alert.evidenceReport || '';
-  const recommendations = alert.recommendations || [];
-  const memberName = alert.memberName || 'Unknown';
+  const score = alert.riskScore || alert.risk?.score || alert.score || 0;
+  const reason = alert.reason || alert.risk?.evidenceReport || alert.evidenceReport || alert.triggerCondition || 'No reason provided';
+  const evidence = alert.evidenceReport || alert.risk?.evidenceReport || '';
+  const recommendations = alert.recommendations || alert.risk?.recommendations || [];
+  const memberName = alert.memberName || alert.name || 'Unknown';
 
   return (
     <>
@@ -80,9 +80,15 @@ export default function AlertCard({ alert, onContact, onAssign }) {
           </button>
           <button 
             onClick={() => onAssign(alert)}
-            className="flex-1 min-w-[120px] px-4 py-3 bg-amber-500/90 hover:bg-amber-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-sm backdrop-blur-sm border border-amber-400/50"
+            className="flex-1 min-w-[100px] px-3 py-3 bg-amber-500/90 hover:bg-amber-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-xs backdrop-blur-sm border border-amber-400/50"
           >
-            👤 Assign Task
+            👤 Assign
+          </button>
+          <button 
+            onClick={() => onResolve(alert)}
+            className="flex-1 min-w-[100px] px-3 py-3 bg-green-500/90 hover:bg-green-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all text-xs backdrop-blur-sm border border-green-400/50"
+          >
+            ✅ Resolve
           </button>
         </div>
       </div>

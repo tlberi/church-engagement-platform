@@ -9,11 +9,12 @@ import {
   getGrowthStats,
   assignPlanToNewMembers 
 } from '../services/growth.service';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
+import { getOrgId } from '../utils/org';
 
 const Growth = () => {
   const { currentUser } = useAuth();
-  const orgId = currentUser?.email || 'church1';
+  const orgId = getOrgId(currentUser);
   
   const [plans, setPlans] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);

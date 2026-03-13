@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import AlertCard from '../components/alerts/AlertCard';
-import { getAlerts, getRiskStats, createAlert, updateAlert, resolveAlert } from '../services/alerts.service';
+import { exportAlertsCSV } from '../services/reports.service';
+import { getAlerts, getRiskStats, createAlert, resolveAlert } from '../services/alerts.service';
+
 import { getTemplates, sendNotification } from '../services/notifications.service';
 import { getMembers } from '../services/members.service';
+import { getOrgId } from '../utils/org';
 
 export default function Alerts() {
   const { currentUser } = useAuth();
@@ -17,27 +20,21 @@ export default function Alerts() {
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
 
-  const orgId = currentUser?.email?.split('@')[0] || 'church1';
+  const orgId = getOrgId(currentUser);
 
-  useEffect(() => {
-    loadData();
-    loadTemplates();
-    const interval = setInterval(loadData, 30000); // Refresh every 30s
-    return () => clearInterval(interval);
-  }, [orgId]);
-
-  const loadTemplates = async () => {
+  const loadTemplates = useCallback(async () => {
     try {
-      const t = await getTemplates('alert');
+      const t = await getTemplates('alert', null, orgId);
       setTemplates(t);
     } catch (error) {
       console.error('Templates load error:', error);
     }
-  };
+  }, [orgId]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
+      // Using alerts.service.js functions
       const alertsData = await getAlerts(orgId);
       const statsData = await getRiskStats(orgId);
       setAlerts(alertsData);
@@ -47,18 +44,29 @@ export default function Alerts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId]);
+
+  useEffect(() => {
+    loadData();
+    loadTemplates();
+    const interval = setInterval(loadData, 30000); // Refresh every 30s
+    return () => clearInterval(interval);
+  }, [loadData, loadTemplates]);
+
+
+
 
   const filteredAlerts = alerts
     .filter(alert => 
       (alert.memberName || alert.name || '').toLowerCase().includes(search.toLowerCase()) &&
-      (activeTab === 'all' || (alert.severity === activeTab || alert.risk?.status === activeTab))
+      (activeTab === 'all' || (alert.severity === activeTab || alert.risk?.riskLevel === activeTab || alert.risk?.status === activeTab))
     );
 
   const handleContact = async (alert) => {
     try {
       const members = await getMembers(orgId);
-      const member = members.find(m => m.id === alert.memberId);
+      const memberId = alert.memberId || alert.id;
+      const member = members.find(m => m.id === memberId);
       if (!member) {
         toast.error('Member not found');
         return;
@@ -69,17 +77,17 @@ export default function Alerts() {
 
       if (emailTemplate && member.email) {
         await sendNotification(emailTemplate.id, member.id, member.email, null, 'email', {
-          memberName: alert.memberName,
-          riskScore: alert.riskScore,
+          memberName: alert.memberName || alert.name,
+          riskScore: alert.riskScore || alert.risk?.score || 0,
           org_name: 'Grace Church'
-        });
+        }, orgId);
       }
 
       if (smsTemplate && member.phone) {
         await sendNotification(smsTemplate.id, member.id, null, member.phone, 'sms', {
-          memberName: alert.memberName,
+          memberName: alert.memberName || alert.name,
           org_name: 'Grace Church'
-        });
+        }, orgId);
       }
 
       toast.success('✅ Contact notifications sent!');
@@ -90,12 +98,71 @@ export default function Alerts() {
   };
 
   const handleAssign = async (alert) => {
-    toast.info('Assign feature coming soon - Contact team member directly');
+    toast('Assign feature coming soon - Contact team member directly', { type: 'info' });
   };
 
+  const handleResolve = async (alert) => {
+    if (alert?.isComputed) {
+      toast('Computed alerts resolve automatically after improved attendance.', { icon: 'ℹ️' });
+      return;
+    }
+    try {
+      await resolveAlert(alert.id);
+      toast.success('✅ Alert resolved!');
+      loadData();
+    } catch (error) {
+      toast.error('Failed to resolve alert');
+    }
+  };
+
+  const handleExportAlerts = () => {
+    const success = exportAlertsCSV(alerts);
+    if (success) {
+      toast.success('🚨 Alerts report downloaded!');
+    } else {
+      toast.error('No alerts data available to export');
+    }
+  };
+
+
   const handleGenerate = async () => {
-    toast.info('Auto-generate feature coming soon - Risk stats updating live');
-    loadData();
+    try {
+      toast.loading('Generating alerts...', { id: 'generate' });
+      
+      // Create 3 sample alerts
+      const sampleAlerts = [
+        {
+          memberName: 'John Smith',
+          severity: 'red',
+          riskScore: 85,
+          reason: '3 consecutive service misses',
+          memberId: 'member1'
+        },
+        {
+          memberName: 'Sarah Johnson',
+          severity: 'orange',
+          riskScore: 65,
+          reason: 'Low attendance (42%) and no growth progress',
+          memberId: 'member2'
+        },
+        {
+          memberName: 'Mike Davis',
+          severity: 'yellow',
+          riskScore: 45,
+          reason: 'Missed 2 services in a row',
+          memberId: 'member3'
+        }
+      ];
+
+      for (const alertData of sampleAlerts) {
+        await createAlert(alertData, orgId);
+      }
+
+      toast.success('✅ Generated 3 sample alerts!', { id: 'generate' });
+      loadData();
+    } catch (error) {
+      toast.error('Failed to generate alerts', { id: 'generate' });
+    }
   };
 
   if (loading) {
@@ -165,12 +232,20 @@ export default function Alerts() {
             onChange={(e) => setSearch(e.target.value)}
             className="flex-1 p-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors shadow-sm"
           />
-          <button 
+            <div className="flex gap-3">
+            <button 
             onClick={handleGenerate}
             className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold text-lg rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 whitespace-nowrap"
-          >
-            ⚙️ Generate Daily Alerts
-          </button>
+            >
+              ⚙️ Generate Daily Alerts
+            </button>
+            <button 
+              onClick={handleExportAlerts}
+              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-lg rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 whitespace-nowrap"
+            >
+              📥 Export CSV
+            </button>
+            </div>
         </div>
         
         {/* Tabs */}
@@ -212,6 +287,7 @@ export default function Alerts() {
               alert={alert}
               onContact={handleContact}
               onAssign={handleAssign}
+              onResolve={handleResolve}
             />
           ))}
         </div>

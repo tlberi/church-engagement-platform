@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { getMembers } from '../services/members.service';
 import { 
   getTodayService, 
@@ -11,6 +11,7 @@ import {
 } from '../services/attendance.service';
 import { getRiskStats } from '../services/alerts.service';
 import { generateServiceQR, downloadQRCode } from '../services/qrcode.service';
+import { getOrgId } from '../utils/org';
 
 export default function Attendance() {
   const { currentUser } = useAuth();
@@ -26,7 +27,7 @@ export default function Attendance() {
   const [qrCode, setQrCode] = useState(null);
   const [showQR, setShowQR] = useState(false);
 
-  const orgId = currentUser?.email || 'demo-org';
+  const orgId = getOrgId(currentUser);
   const today = new Date().toLocaleDateString('en-US', { 
     weekday: 'long', 
     year: 'numeric', 
@@ -34,7 +35,6 @@ export default function Attendance() {
     day: 'numeric' 
   });
 
-  const loadDataCallback = useCallback(() => loadData(), [orgId]);
   const loadRiskStats = useCallback(async () => {
     try {
       const riskData = await getRiskStats(orgId);
@@ -44,16 +44,7 @@ export default function Attendance() {
     }
   }, [orgId]);
 
-  useEffect(() => {
-    loadDataCallback();
-    loadRiskStats();
-  }, [loadDataCallback, loadRiskStats]);
-
-  useEffect(() => {
-    setStats(calculateAttendanceStats(members.length, presentMembers.length));
-  }, [members, presentMembers]);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -83,7 +74,16 @@ export default function Attendance() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [orgId]);
+
+  useEffect(() => {
+    loadData();
+    loadRiskStats();
+  }, [loadData, loadRiskStats]);
+
+  useEffect(() => {
+    setStats(calculateAttendanceStats(members.length, presentMembers));
+  }, [members, presentMembers]);
 
   async function handleCheckIn(member) {
     if (!currentService || loading) {
@@ -98,11 +98,11 @@ export default function Attendance() {
     }
 
     try {
-      const attendance = await markPresent(currentService.id, member.id, member.name);
+      const attendance = await markPresent(currentService.id, member.id, member.name, orgId);
       const newPresent = [...presentMembers, attendance];
       setPresentMembers(newPresent);
       // Force immediate stats update
-      setStats(calculateAttendanceStats(members.length, newPresent.length));
+      setStats(calculateAttendanceStats(members.length, newPresent));
       toast.success(`✅ ${member.name} marked present`);
       // Reload risk stats after check-in
       loadRiskStats();
@@ -142,16 +142,28 @@ export default function Attendance() {
     return presentMembers.some(p => p.memberId === memberId);
   }
 
-  function handleCopyLink() {
-    if (qrCode?.checkInUrl) {
-      navigator.clipboard.writeText(qrCode.checkInUrl);
+  async function handleCopyLink() {
+    if (!qrCode?.checkInUrl) return;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(qrCode.checkInUrl);
+      } else {
+        const input = document.createElement('input');
+        input.value = qrCode.checkInUrl;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
       toast.success('Link copied!');
+    } catch (error) {
+      toast.error('Failed to copy link');
     }
   }
 
   const filteredMembers = members.filter(member =>
-    member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (member.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (member.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (member.phone || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -363,7 +375,9 @@ export default function Attendance() {
                 <div className="w-64 h-64 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500 mx-auto">
                   QR Preview
                 </div>
-              )}\n            </div>\n            <div className="space-y-3 mb-6">
+              )}
+            </div>
+            <div className="space-y-3 mb-6">
               <p className="text-lg text-gray-700">1. Open your phone camera</p>
               <p className="text-lg text-gray-700">2. Point at this QR code</p>
               <p className="text-lg text-gray-700">3. Tap notification to check in</p>

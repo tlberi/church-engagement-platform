@@ -1,6 +1,8 @@
-import React from 'react';
+import { useState } from 'react';
 
 const MilestoneCard = ({ milestone, index, isCompleted, onToggle, progressData }) => {
+  const [isCardHover, setIsCardHover] = useState(false);
+  const [isIconHover, setIsIconHover] = useState(false);
   const { type, requirement } = milestone;
   
   let icon = '⭕';
@@ -25,10 +27,21 @@ const MilestoneCard = ({ milestone, index, isCompleted, onToggle, progressData }
   };
 
   return (
-    <div style={styles.card}>
+    <div
+      style={{ ...styles.card, ...(isCardHover ? styles.cardHover : {}) }}
+      onMouseEnter={() => setIsCardHover(true)}
+      onMouseLeave={() => setIsCardHover(false)}
+    >
       <div style={styles.cardHeader}>
         <div style={styles.index}>{index}</div>
-        <div style={styles.icon} onClick={handleToggle}>{icon}</div>
+        <div
+          style={{ ...styles.icon, ...(isIconHover ? styles.iconHover : {}) }}
+          onMouseEnter={() => setIsIconHover(true)}
+          onMouseLeave={() => setIsIconHover(false)}
+          onClick={handleToggle}
+        >
+          {icon}
+        </div>
       </div>
       
       <div style={styles.content}>
@@ -41,7 +54,7 @@ const MilestoneCard = ({ milestone, index, isCompleted, onToggle, progressData }
         )}
       </div>
       
-      <div style={styles.status} statusColor={statusColor} statusBg={statusBg}>
+      <div style={{ ...styles.status, color: statusColor, background: statusBg }}>
         <span>{icon} {isCompleted ? 'Completed' : progressData?.autoProgress?.completedMilestones?.includes(milestone.id) ? 'Auto-detected' : 'Pending'}</span>
       </div>
     </div>
@@ -58,10 +71,10 @@ const styles = {
     border: '2px solid #e2e8f0',
     transition: 'all 0.2s ease-in-out',
     cursor: 'pointer',
-    ':hover': {
-      boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-      borderColor: '#cbd5e1',
-    }
+  },
+  cardHover: {
+    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+    borderColor: '#cbd5e1',
   },
   cardHeader: {
     display: 'flex',
@@ -89,10 +102,10 @@ const styles = {
     padding: '0.25rem',
     borderRadius: '50%',
     transition: 'all 0.2s',
-    ':hover': {
-      background: '#f1f5f9',
-      transform: 'scale(1.1)',
-    }
+  },
+  iconHover: {
+    background: '#f1f5f9',
+    transform: 'scale(1.1)',
   },
   content: {
     flex: 1,
