@@ -1,5 +1,6 @@
 import Attendance from './pages/Attendance';
 import Growth from './pages/Growth';
+import Landing from './pages/Landing';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
@@ -25,6 +26,7 @@ function App() {
         <Toaster position="top-right" />
         
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route 
             path="/dashboard" 
@@ -58,7 +60,6 @@ function App() {
               </ProtectedRoute>
             } 
           />
-
           <Route 
             path="/alerts" 
             element={
@@ -81,8 +82,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-          <Route path="/checkin/:orgId/:serviceId" element={<QRCheckIn />} />
+          <Route path="/checkin/:orgId/:serviceId" element={<div>QR Check-in Coming Soon</div>} />
         </Routes>
       </Router>
     </AuthProvider>
@@ -90,3 +90,4 @@ function App() {
 }
 
 export default App;
+

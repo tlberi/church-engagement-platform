@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getRiskStats } from '../services/alerts.service';
+import { Toaster } from 'react-hot-toast';
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
@@ -17,163 +18,109 @@ export default function Dashboard() {
       const stats = await getRiskStats(currentUser?.email || 'church1');
       setRiskStats(stats);
     } catch (error) {
-      console.error('Stats error:', error);
+      // Stats error handled silently
     } finally {
       setLoading(false);
     }
   }
 
   if (loading) {
-    return <div style={styles.loading}>Loading dashboard...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>🎉 Church Engagement Dashboard</h1>
-      <p style={styles.subtitle}>
-        Monitor attendance, engagement risks, and church health in real-time
-      </p>
+    <div className="p-8 max-w-7xl mx-auto">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-4">
+          🎉 Church Engagement Dashboard
+        </h1>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          Monitor attendance, engagement risks, and church health in real-time
+        </p>
+      </div>
 
-      <div style={styles.grid}>
-        <div style={{ ...styles.card, background: '#eff6ff' }}>
-          <div style={styles.cardIcon}>👥</div>
-          <h3 style={styles.cardTitle}>Members</h3>
-          <p style={styles.cardText}>{riskStats.total} total members</p>
-          <button
-            onClick={() => window.location.href = '/members'}
-            style={styles.cardButton}
-          >
-            Manage Members →
-          </button>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-3xl border border-blue-100 hover:shadow-xl transition-all hover:-translate-y-2">
+            <div className="text-4xl mb-4">👥</div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Members</h3>
+            <p className="text-4xl font-bold text-blue-600 mb-4">{riskStats.total}</p>
+            <p className="text-gray-600 mb-6">total members</p>
+            <button
+              onClick={() => window.location.href = '/members'}
+              className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl"
+            >
+              Manage Members →
+            </button>
+          </div>
 
-        <div style={{ ...styles.card, background: '#f0fdf4' }}>
-          <div style={styles.cardIcon}>✅</div>
-          <h3 style={styles.cardTitle}>Attendance</h3>
-          <p style={styles.cardText}>Today's service tracking</p>
-          <button
-            onClick={() => window.location.href = '/attendance'}
-            style={styles.cardButton}
-          >
-            Take Attendance →
-          </button>
-        </div>
+          <div className="group bg-gradient-to-br from-emerald-50 to-green-50 p-8 rounded-3xl border border-emerald-100 hover:shadow-xl transition-all hover:-translate-y-2">
+            <div className="text-4xl mb-4">✅</div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Attendance</h3>
+            <p className="text-3xl font-bold text-emerald-600 mb-6">Today's service tracking</p>
+            <button
+              onClick={() => window.location.href = '/attendance'}
+              className="w-full px-6 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 transition-all shadow-lg hover:shadow-xl"
+            >
+              Take Attendance →
+            </button>
+          </div>
 
-        <div style={{ ...styles.card, background: riskStats.red > 0 ? '#fef2f2' : riskStats.orange > 0 ? '#fff7ed' : '#f0fdf4' }}>
-          <div style={styles.cardIcon}>{riskStats.red > 0 ? '🚨' : riskStats.orange > 0 ? '⚠️' : '✅'}</div>
-          <h3 style={styles.cardTitle}>Engagement Alerts</h3>
-          <p style={styles.cardText}>{riskStats.red} critical, {riskStats.yellow + riskStats.orange} warnings</p>
-          <button
-            onClick={() => window.location.href = '/alerts'}
-            style={styles.cardButton}
-          >
-            View Alerts ({riskStats.red + riskStats.yellow + riskStats.orange})
-          </button>
-        </div>
+          <div className={`group p-8 rounded-3xl border hover:shadow-xl transition-all hover:-translate-y-2 ${riskStats.red > 0 ? 'bg-gradient-to-br from-red-50 to-rose-50 border-red-200' : riskStats.orange > 0 ? 'bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200' : 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200'}`}>
+            <div className="text-4xl mb-4">{riskStats.red > 0 ? '🚨' : riskStats.orange > 0 ? '⚠️' : '✅'}</div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Engagement Alerts</h3>
+            <p className="text-xl font-bold mb-2">{riskStats.red} critical</p>
+            <p className="text-lg text-gray-600 mb-6">{riskStats.yellow + riskStats.orange} warnings</p>
+            <button
+              onClick={() => window.location.href = '/alerts'}
+              className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold rounded-xl hover:from-red-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl"
+            >
+              View Alerts ({riskStats.red + riskStats.yellow + riskStats.orange})
+            </button>
+          </div>
 
-        <div style={{ ...styles.card, background: '#fef3c7' }}>
-          <div style={styles.cardIcon}>📈</div>
-          <h3 style={styles.cardTitle}>Growth Tracking</h3>
-          <p style={styles.cardText}>Spiritual growth journeys & milestones</p>
-          <button
-            onClick={() => window.location.href = '/growth'}
-            style={styles.cardButton}
-          >
-            Track Growth →
-          </button>
+          <div className="group bg-gradient-to-br from-amber-50 to-yellow-50 p-8 rounded-3xl border border-amber-200 hover:shadow-xl transition-all hover:-translate-y-2">
+            <div className="text-4xl mb-4">📈</div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Growth Tracking</h3>
+            <p className="text-3xl font-bold text-amber-600 mb-6">Spiritual growth journeys & milestones</p>
+            <button
+              onClick={() => window.location.href = '/growth'}
+              className="w-full px-6 py-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition-all shadow-lg hover:shadow-xl"
+            >
+              Track Growth →
+            </button>
+          </div>
         </div>
       </div>
 
-      <div style={styles.statusBox}>
-        <p style={styles.statusText}>
-          ✅ <strong>Risk Monitoring:</strong> {riskStats.avgScore.toFixed(1)}% avg engagement score
-        </p>
-        <p style={styles.statusText}>
-          🔄 <strong>Daily Scan:</strong> Last run today - <button onClick={loadStats} style={styles.refreshBtn}>Refresh</button>
-        </p>
+      <div className="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <span className="inline-block w-3 h-3 bg-emerald-500 rounded-full mr-3"></span>
+            <strong className="text-lg text-emerald-800 font-semibold">Risk Monitoring:</strong> 
+            <span className="text-emerald-700 font-semibold ml-1">{riskStats.avgScore?.toFixed(1) || 0}%</span> avg engagement score
+          </div>
+          <div className="flex items-center justify-end md:justify-start">
+            <span className="inline-block w-3 h-3 bg-emerald-500 rounded-full mr-3"></span>
+            <span className="text-emerald-800 font-semibold">Daily Scan:</span> 
+            <button 
+              onClick={loadStats} 
+              className="ml-2 px-4 py-1.5 bg-emerald-500 text-white text-sm font-semibold rounded-lg hover:bg-emerald-600 transition-colors ml-1"
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
       </div>
+
+      <Toaster position="top-right" />
     </div>
   );
 }
-
-const styles = {
-  container: {
-    padding: '2rem',
-  },
-  title: {
-    fontSize: '2rem',
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: '0.5rem',
-    margin: 0,
-  },
-  subtitle: {
-    fontSize: '1.125rem',
-    color: '#6b7280',
-    marginBottom: '2rem',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '1.5rem',
-    marginBottom: '2rem',
-  },
-  card: {
-    padding: '2rem',
-    borderRadius: '0.75rem',
-    textAlign: 'center',
-  },
-  cardIcon: {
-    fontSize: '3rem',
-    marginBottom: '1rem',
-  },
-  cardTitle: {
-    fontSize: '1.25rem',
-    fontWeight: '600',
-    marginBottom: '0.5rem',
-    margin: '0 0 0.5rem 0',
-  },
-  cardText: {
-    color: '#6b7280',
-    marginBottom: '1rem',
-  },
-  cardButton: {
-    padding: '0.625rem 1.25rem',
-    background: '#667eea',
-    color: 'white',
-    border: 'none',
-    borderRadius: '0.5rem',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  statusBox: {
-    background: '#f0fdf4',
-    border: '2px solid #86efac',
-    borderRadius: '0.75rem',
-    padding: '1.5rem',
-  },
-  statusText: {
-    color: '#166534',
-    margin: '0.5rem 0',
-    fontSize: '0.95rem',
-  },
-  refreshBtn: {
-    background: '#10b981',
-    color: 'white',
-    border: 'none',
-    padding: '0.25rem 0.75rem',
-    borderRadius: '0.375rem',
-    fontSize: '0.8rem',
-    cursor: 'pointer',
-    fontWeight: '500'
-  },
-  loading: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '400px',
-    fontSize: '1.25rem',
-    color: '#6b7280'
-  }
-};

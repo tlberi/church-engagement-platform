@@ -22,7 +22,7 @@ export async function getTemplates(type = null, channel = null, orgId = ORG_ID) 
     const snapshot = await getDocs(q);
     return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (error) {
-    console.error('Error getting templates:', error);
+
     return [];
   }
 }
@@ -37,7 +37,7 @@ export async function createTemplate(templateData, orgId = ORG_ID) {
     });
     return { id: docRef.id, ...templateData };
   } catch (error) {
-    console.error('Error creating template:', error);
+
     throw error;
   }
 }
@@ -55,7 +55,7 @@ export async function createNotification(notificationData, orgId = ORG_ID) {
     });
     return { id: docRef.id, ...notificationData };
   } catch (error) {
-    console.error('Error creating notification:', error);
+
     throw error;
   }
 }
@@ -69,7 +69,7 @@ export async function updateNotificationStatus(notificationId, status, sentAt = 
     });
     return true;
   } catch (error) {
-    console.error('Error updating notification:', error);
+
     return false;
   }
 }
@@ -86,7 +86,7 @@ export async function getNotificationsForAlert(alertId, orgId = ORG_ID, limitCou
     const snapshot = await getDocs(q);
     return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (error) {
-    console.error('Error getting alert notifications:', error);
+
     return [];
   }
 }
@@ -190,7 +190,7 @@ export async function sendNotification(templateId, recipientId, recipientEmail, 
 
     return { success: sent, notificationId: notification.id };
   } catch (error) {
-    console.error('Send notification error:', error);
+
     return { success: false, error: error.message };
   }
 }

@@ -83,9 +83,8 @@ export async function markPresent(serviceId, memberId, memberName) {
       const { calculateRiskScore, updateMemberRisk } = await import('./alerts.service.js');
       const risk = await calculateRiskScore(memberId);
       await updateMemberRisk(memberId, risk);
-      console.log('Risk score updated for member:', memberId);
     } catch (riskError) {
-      console.warn('Risk update failed:', riskError);
+      // Risk update failed silently
     }
 
     return {

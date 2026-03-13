@@ -31,18 +31,8 @@ export async function getMembers(orgId) {
       ...doc.data()
     })).sort((a, b) => a.name.localeCompare(b.name));
 
-    // Populate risk data if not present
-    for (const member of members) {
-      if (!member.riskStatus) {
-        const { calculateRiskScore } from './alerts.service.js';
-        const risk = await calculateRiskScore(member.id);
-        member.risk = risk;
-      }
-    }
-    
     return members;
   } catch (error) {
-    console.error('Error getting members:', error);
     throw error;
   }
 }
@@ -61,7 +51,6 @@ export async function addMember(memberData) {
       ...memberData
     };
   } catch (error) {
-    console.error('Error adding member:', error);
     throw error;
   }
 }
@@ -80,7 +69,6 @@ export async function updateMember(memberId, updates) {
       ...updates
     };
   } catch (error) {
-    console.error('Error updating member:', error);
     throw error;
   }
 }
@@ -91,7 +79,6 @@ export async function deleteMember(memberId) {
     await deleteDoc(doc(db, MEMBERS_COLLECTION, memberId));
     return true;
   } catch (error) {
-    console.error('Error deleting member:', error);
     throw error;
   }
 }

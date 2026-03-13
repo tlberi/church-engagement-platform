@@ -43,7 +43,6 @@ export async function downloadQRCode(serviceId, orgId, eventName) {
     
     return true;
   } catch (error) {
-    console.error('Error downloading QR code:', error);
     throw error;
   }
 }

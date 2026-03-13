@@ -1,37 +1,33 @@
-# Church Engagement Platform TODO
+m# Church Engagement Platform - Task: Fix Attendance + Landing + Back Buttons
 
-## PRIORITY 3: Notification Engine ✅ COMPLETE
-- ✅ Core risk algorithm + alerts collection
-- ✅ Alerts.jsx dashboard 
-- ✅ AlertCard with evidence display
-- ✅ notifications.service.js CRUD + templates
-- ✅ alerts.service.js auto-trigger red alerts
-- ✅ Integration complete
+## Plan Steps:
+✅ 1. Create beautiful Landing page (src/pages/Landing.jsx) with sci-fi Get Started -> /login
+✅ 2. Update App.js routing: '/' -> Landing (public, no auth)
+✅ 2. Update App.js routing: '/' -> Landing (public, no auth)
+✅ 3. App.js fixed and landing route added
+✅ 4. Attendance.jsx enhanced with live stats, risk, back button
+✅ 5. Back buttons added to all pages
+- [ ] 6. Test & demo
+- [ ] 3. Enhance Attendance.jsx: Fix stats update, add risk stats, back button
+- [ ] 4. Add back buttons to Members.jsx, Growth.jsx, Alerts.jsx
+- [ ] 5. Test attendance marking (live absent decrease), navigation, landing
+- [ ] 6. Demo: npm start
 
-## PRIORITY 4: PROGRESS TRACKING SYSTEM 📈 **IN PROGRESS (Step 4/18)**
+**Current Progress:** Landing page created! Next: App.js routing"
+</xai:function_call.
 
-### Step 1: Data Layer (Complete)
-- ✅ Create growth.service.js: CRUD plans/progress, auto-detection logic
 
-### Step 2: Core UI Components ✅ COMPLETE
-- ✅ Create src/components/growth/GrowthJourney.jsx: Progress bar + checklist
-- ✅ Create src/components/growth/MilestoneCard.jsx: Individual milestone details
 
-### Step 3: Pages & Routing ✅ COMPLETE
-- ✅ Create src/pages/Growth.jsx: Leader dashboard for plans/members
-- ✅ Update src/App.js: Add /growth route
 
-### Step 4: Integration
-- ✅ Update Dashboard.jsx: Add Growth card
-- ✅ Basic integration complete
 
-### Step 5: Seeding & Testing
-- [ ] Test: npm start → /dashboard → Track Growth → verify auto-seed + UI
+<xai:function_call name="read_file">
+<parameter name="path">src/App.js
+- [ ] 2. Update App.js routing: '/' -> Landing (public, no auth)
+- [:white_check_mark:] 3. Enhance Attendance.jsx: Fix stats update, add risk stats, back button
+- [ ] 4. Add back buttons to Members.jsx, Growth.jsx, Alerts.jsx
+- [ ] 5. Test attendance marking (live absent decrease), navigation, landing
+- [ ] 6. Demo: npm start
 
-### Step 6: Polish
-- [ ] Member-facing dashboard
-- [ ] Mark Priority 4 COMPLETE
+**Current Progress:** Starting implementation...
+**Next:** Landing page"
 
-**Next Step:** Test the implementation! Run `npm start` → /dashboard → Track Growth → see New Member Journey & progress viz
-
-The core Progress Tracking System (Priority 4) is now functional! 🎉

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import GrowthJourney from '../components/growth/GrowthJourney';
 import { 
@@ -21,13 +21,8 @@ const Growth = () => {
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
-  const [members, setMembers] = useState([]);
 
-  useEffect(() => {
-    loadData();
-  }, [orgId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [plansData, statsData] = await Promise.all([
@@ -43,22 +38,26 @@ const Growth = () => {
         setPlans(newPlans);
       }
     } catch (error) {
-      console.error('Load data error:', error);
+      toast.error('Failed to load growth data');
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId]);
 
-  const loadMemberProgress = async (memberId) => {
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const loadMemberProgress = async (index) => {
     try {
       if (!selectedPlanId) {
         toast.error('Select a growth plan first');
         return;
       }
       
-      const progress = await getMemberProgress(memberId, selectedPlanId, orgId);
+      const progress = await getMemberProgress(`member${index}`, selectedPlanId, orgId);
       setMemberProgress(progress);
-      setSelectedMember(members.find(m => m.id === memberId));
+      setSelectedMember({ id: `member${index}`, name: `Member ${index}` });
     } catch (error) {
       toast.error('Failed to load progress');
     }
@@ -67,17 +66,22 @@ const Growth = () => {
   const handleMilestoneToggle = async (milestoneId, completed) => {
     if (!selectedMember?.id || !selectedPlanId) return;
     
-    await updateMemberProgress(
-      selectedMember.id, 
-      selectedPlanId, 
-      milestoneId, 
-      completed,
-      orgId
-    );
-    
-    // Reload progress
-    const updatedProgress = await getMemberProgress(selectedMember.id, selectedPlanId, orgId);
-    setMemberProgress(updatedProgress);
+    try {
+      await updateMemberProgress(
+        selectedMember.id, 
+        selectedPlanId, 
+        milestoneId, 
+        completed,
+        orgId
+      );
+      
+      // Reload progress
+      const updatedProgress = await getMemberProgress(selectedMember.id, selectedPlanId, orgId);
+      setMemberProgress(updatedProgress);
+      toast.success(completed ? 'Milestone completed! ✅' : 'Milestone reset');
+    } catch (error) {
+      toast.error('Failed to update progress');
+    }
   };
 
   const handleAssignAllNew = async () => {
@@ -85,55 +89,69 @@ const Growth = () => {
       toast.error('Select a plan first');
       return;
     }
-    await assignPlanToNewMembers(selectedPlanId, orgId);
-    toast.success('Assigned to new members!');
+    try {
+      await assignPlanToNewMembers(selectedPlanId, orgId);
+      toast.success('Assigned to new members!');
+    } catch (error) {
+      toast.error('Failed to assign plan');
+    }
   };
 
   if (loading) {
-    return <div style={styles.loading}>Loading growth tracking...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading growth tracking...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>📈 Growth Tracking Dashboard</h1>
-        <p style={styles.subtitle}>
+    <div className="p-8 max-w-7xl mx-auto">
+<div className="flex items-center gap-4 mb-12 justify-center">
+        <button
+          onClick={() => window.history.back()}
+          className="p-3 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all text-lg font-medium"
+        >
+          ← Back
+        </button>
+        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          📈 Growth Tracking Dashboard
+        </h1>
+      </div>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           Track spiritual growth journeys, auto-detect progress, celebrate milestones
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}>📋</div>
-          <div>
-            <h3 style={styles.statNumber}>{stats.totalPlans || 0}</h3>
-            <p style={styles.statLabel}>Growth Plans</p>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="group p-8 bg-white rounded-3xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all hover:-translate-y-2">
+          <div className="text-4xl mb-4">📋</div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Growth Plans</h3>
+          <p className="text-4xl font-bold text-blue-600 mb-2">{stats.totalPlans || 0}</p>
         </div>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}>👥</div>
-          <div>
-            <h3 style={styles.statNumber}>{stats.membersWithPlans || 0}</h3>
-            <p style={styles.statLabel}>Members Tracked</p>
-          </div>
+        <div className="group p-8 bg-white rounded-3xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all hover:-translate-y-2">
+          <div className="text-4xl mb-4">👥</div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Members Tracked</h3>
+          <p className="text-4xl font-bold text-emerald-600 mb-2">{stats.membersWithPlans || 0}</p>
         </div>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}>📊</div>
-          <div>
-            <h3 style={styles.statNumber}>{stats.avgProgress || 0}%</h3>
-            <p style={styles.statLabel}>Avg Progress</p>
-          </div>
+        <div className="group p-8 bg-white rounded-3xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all hover:-translate-y-2">
+          <div className="text-4xl mb-4">📊</div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Avg Progress</h3>
+          <p className="text-4xl font-bold text-purple-600 mb-2">{stats.avgProgress || 0}%</p>
         </div>
       </div>
 
-      <div style={styles.mainContent}>
+      <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
         {/* Controls */}
-        <div style={styles.controls}>
+        <div className="flex flex-col md:flex-row gap-4 mb-8 items-start md:items-center">
           <select 
             value={selectedPlanId || ''} 
             onChange={(e) => setSelectedPlanId(e.target.value)}
-            style={styles.select}
+            className="flex-1 max-w-md p-4 border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:outline-none transition-all shadow-sm"
           >
             <option value="">Select Growth Plan</option>
             {plans.map(plan => (
@@ -144,7 +162,7 @@ const Growth = () => {
           {selectedPlanId && (
             <button 
               onClick={handleAssignAllNew}
-              style={styles.assignBtn}
+              className="px-8 py-4 bg-emerald-500 text-white font-semibold rounded-2xl hover:bg-emerald-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
             >
               Assign to New Members
             </button>
@@ -152,15 +170,14 @@ const Growth = () => {
         </div>
 
         {selectedPlanId && !selectedMember && (
-          <div style={styles.memberSelect}>
-            <p style={styles.memberPrompt}>Select a member to view progress:</p>
-            <div style={styles.memberList}>
-              {/* Simplified - in prod load from members.service */}
-              {Array.from({length: 10}, (_, i) => `Member ${i+1}`).map(name => (
+          <div className="text-center py-12 bg-gray-50 rounded-3xl">
+            <p className="text-2xl text-gray-600 mb-8">Select a member to view progress:</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-4xl mx-auto">
+              {Array.from({length: 10}, (_, index) => `Member ${index+1}`).map((name, index) => (
                 <button 
                   key={name}
-                  onClick={() => loadMemberProgress(`member${i+1}`)}
-                  style={styles.memberBtn}
+                  onClick={() => loadMemberProgress(index+1)}
+                  className="p-6 bg-white border-2 border-gray-200 rounded-2xl hover:border-blue-400 hover:shadow-md transition-all hover:bg-blue-50 font-medium"
                 >
                   {name}
                 </button>
@@ -170,15 +187,15 @@ const Growth = () => {
         )}
 
         {memberProgress && (
-          <div style={styles.journeySection}>
-            <div style={styles.memberHeader}>
-              <h2>{selectedMember?.name || 'Member'}'s Journey</h2>
+          <div>
+            <div className="flex justify-between items-center mb-8 p-4 bg-gray-50 rounded-2xl">
+              <h2 className="text-3xl font-bold text-gray-900">{selectedMember?.name || 'Member'}'s Journey</h2>
               <button 
                 onClick={() => {
                   setSelectedMember(null);
                   setMemberProgress(null);
                 }}
-                style={styles.backBtn}
+                className="px-6 py-3 bg-gray-100 border border-gray-200 rounded-xl hover:bg-gray-200 transition-all font-medium flex items-center gap-2"
               >
                 ← Back to Select
               </button>
@@ -195,142 +212,4 @@ const Growth = () => {
   );
 };
 
-const styles = {
-  container: {
-    padding: '2rem',
-    maxWidth: '1200px',
-    margin: '0 auto',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '3rem',
-  },
-  title: {
-    fontSize: '2.5rem',
-    fontWeight: '800',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    margin: 0,
-  },
-  subtitle: {
-    fontSize: '1.25rem',
-    color: '#64748b',
-    marginTop: '0.5rem',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '1.5rem',
-    marginBottom: '3rem',
-  },
-  statCard: {
-    background: 'white',
-    padding: '2rem 1.5rem',
-    borderRadius: '1rem',
-    display: 'flex',
-    gap: '1rem',
-    alignItems: 'center',
-    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-    border: '1px solid #e2e8f0',
-  },
-  statIcon: {
-    fontSize: '2.5rem',
-  },
-  statNumber: {
-    fontSize: '2.5rem',
-    fontWeight: '800',
-    color: '#1e293b',
-    margin: 0,
-  },
-  statLabel: {
-    color: '#64748b',
-    fontSize: '1rem',
-    margin: 0,
-  },
-  mainContent: {
-    background: 'white',
-    borderRadius: '1rem',
-    padding: '2.5rem',
-    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-  },
-  controls: {
-    display: 'flex',
-    gap: '1rem',
-    marginBottom: '2rem',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-  },
-  select: {
-    padding: '0.75rem 1rem',
-    border: '2px solid #e2e8f0',
-    borderRadius: '0.5rem',
-    fontSize: '1rem',
-    background: 'white',
-    minWidth: '250px',
-  },
-  assignBtn: {
-    padding: '0.75rem 2rem',
-    background: '#10b981',
-    color: 'white',
-    border: 'none',
-    borderRadius: '0.5rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  memberSelect: {
-    textAlign: 'center',
-    padding: '3rem',
-  },
-  memberPrompt: {
-    fontSize: '1.25rem',
-    color: '#64748b',
-    marginBottom: '2rem',
-  },
-  memberList: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '1rem',
-    justifyContent: 'center',
-    maxWidth: '600px',
-    margin: '0 auto',
-  },
-  memberBtn: {
-    padding: '1rem 2rem',
-    background: '#f1f5f9',
-    border: '2px solid #e2e8f0',
-    borderRadius: '0.75rem',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    fontWeight: '500',
-  },
-  journeySection: {
-    marginTop: '2rem',
-  },
-  memberHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '2rem',
-  },
-  backBtn: {
-    padding: '0.75rem 1.5rem',
-    background: '#f1f5f9',
-    border: '1px solid #e2e8f0',
-    borderRadius: '0.5rem',
-    cursor: 'pointer',
-    fontWeight: '500',
-  },
-  loading: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '400px',
-    fontSize: '1.25rem',
-    color: '#6b7280',
-  },
-};
-
 export default Growth;
-

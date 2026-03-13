@@ -142,11 +142,18 @@ export default function Members() {
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12 gap-6">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-gray-900 to-slate-700 bg-clip-text text-transparent mb-2">
+      <div className="flex items-center gap-4 mb-8">
+        <button
+          onClick={() => window.history.back()}
+          className="p-3 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all text-lg font-medium"
+        >
+          ← Back
+        </button>
+        <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-gray-900 to-slate-700 bg-clip-text text-transparent">
             👥 Members
-          </h1>
+        </h1>
+      </div>
+
           <p className="text-xl text-slate-600 font-medium">Manage your church community</p>
         </div>
         <button 
