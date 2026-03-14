@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 // Validate env vars and log issues
@@ -41,5 +41,13 @@ try {
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+if (process.env.REACT_APP_USE_EMULATOR === 'true') {
+  const emulatorHost = process.env.REACT_APP_FIREBASE_EMULATOR_HOST || 'localhost';
+  const authPort = Number(process.env.REACT_APP_FIREBASE_EMULATOR_AUTH_PORT || 9099);
+  const firestorePort = Number(process.env.REACT_APP_FIREBASE_EMULATOR_FIRESTORE_PORT || 8080);
+  connectAuthEmulator(auth, `http://${emulatorHost}:${authPort}`, { disableWarnings: true });
+  connectFirestoreEmulator(db, emulatorHost, firestorePort);
+}
 
 export default app;

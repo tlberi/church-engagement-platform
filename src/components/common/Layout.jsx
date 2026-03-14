@@ -43,6 +43,7 @@ export default function Layout({ children }) {
     { path: '/attendance', icon: '✅', label: 'Attendance' },
     { path: '/alerts', icon: '🚨', label: 'Alerts' },
     { path: '/reports', icon: '📊', label: 'Reports' },
+    { path: '/diagnostics', icon: '🧪', label: 'Diagnostics' },
   ];
 
   return (

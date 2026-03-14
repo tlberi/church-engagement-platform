@@ -53,13 +53,21 @@ export default function Reports() {
     loadAllData();
   }, [loadAllData]);
 
-  const COLORS = ['#ef4444', '#f97316', '#eab308', '#10b981', '#3b82f6'];
+  const COLORS = {
+    red: '#ef4444',
+    orange: '#f97316',
+    yellow: '#eab308',
+    green: '#10b981'
+  };
 
-  const riskPieData = Object.entries(riskData).map(([name, value], index) => ({
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    value,
-    fill: COLORS[index]
-  })).filter(item => item.value > 0);
+  const riskPieData = Object.entries(riskData)
+    .filter(([name]) => ['red', 'orange', 'yellow', 'green'].includes(name))
+    .map(([name, value]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      value,
+      fill: COLORS[name]
+    }))
+    .filter(item => item.value > 0);
 
   const handleExport = () => {
     if (activeTab === 'attendance') {

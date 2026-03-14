@@ -277,8 +277,27 @@ export async function seedDefaultNewMemberJourney(orgId = ORG_ID) {
 export async function assignPlanToNewMembers(planId, orgId = ORG_ID) {
   try {
     const members = await getMembers(orgId);
-    const newMembers = members.filter(m => !m.progressSummary?.currentPlanId);
-    
+    const progressSnap = await getDocs(query(
+      collection(db, MEMBER_PROGRESS_COLLECTION),
+      where('orgId', '==', orgId),
+      where('planId', '==', planId)
+    ));
+    const existing = new Set(progressSnap.docs.map(docSnap => docSnap.data().memberId));
+    const newMembers = members.filter(m => !existing.has(m.id));
+
+    for (const member of newMembers) {
+      await addDoc(collection(db, MEMBER_PROGRESS_COLLECTION), {
+        memberId: member.id,
+        planId,
+        orgId,
+        completedMilestones: [],
+        currentMilestoneIndex: 0,
+        progress: 0,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      });
+    }
+
     toast.success(`Assigned plan to ${newMembers.length} new members`);
   } catch (error) {
     toast.error('Failed to assign plan');
@@ -289,15 +308,26 @@ export async function assignPlanToNewMembers(planId, orgId = ORG_ID) {
 export async function getGrowthStats(orgId = ORG_ID) {
   try {
     const plans = await getGrowthPlans(orgId);
-    
-    const stats = {
+    const progressSnap = await getDocs(query(
+      collection(db, MEMBER_PROGRESS_COLLECTION),
+      where('orgId', '==', orgId)
+    ));
+    const progressDocs = progressSnap.docs.map(docSnap => docSnap.data());
+    const membersWithPlans = new Set(progressDocs.map(doc => doc.memberId)).size;
+    const milestonesCompleted = progressDocs.reduce((sum, doc) => {
+      const completed = Array.isArray(doc.completedMilestones) ? doc.completedMilestones.length : 0;
+      return sum + completed;
+    }, 0);
+    const avgProgress = progressDocs.length > 0
+      ? Math.round(progressDocs.reduce((sum, doc) => sum + (doc.progress || 0), 0) / progressDocs.length)
+      : 0;
+
+    return {
       totalPlans: plans.length,
-      membersWithPlans: 0,
-      avgProgress: 0,
-      milestonesCompleted: 0
+      membersWithPlans,
+      avgProgress,
+      milestonesCompleted
     };
-    
-    return stats;
   } catch (error) {
     return { totalPlans: 0, membersWithPlans: 0, avgProgress: 0, milestonesCompleted: 0 };
   }

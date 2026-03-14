@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Members from './pages/Members';
 import Alerts from './pages/Alerts';
 import Reports from './pages/Reports';
+import Diagnostics from './pages/Diagnostics';
 
 function ProtectedRoute({ children }) {
   const { currentUser } = useAuth();
@@ -76,6 +77,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Reports />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/diagnostics" 
+            element={
+              <ProtectedRoute>
+                <Diagnostics />
               </ProtectedRoute>
             } 
           />
