@@ -25,6 +25,7 @@ export async function createService(orgId, serviceData) {
       orgId,
       date: serviceData.date || getLocalDateString(),
       type: serviceData.type || 'Sunday Service',
+      publicCheckIn: false,
       createdAt: Timestamp.now(),
     });
     

@@ -1,4 +1,6 @@
 import QRCode from 'qrcode';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 // Generate QR code for a service/event
 export async function generateServiceQR(serviceId, orgId) {
@@ -6,6 +8,14 @@ export async function generateServiceQR(serviceId, orgId) {
     // Create check-in URL - supports production URLs
     const publicUrl = process.env.REACT_APP_PUBLIC_URL || window.location.origin;
     const checkInUrl = `${publicUrl}/checkin/${orgId}/${serviceId}`;
+
+    try {
+      await updateDoc(doc(db, 'services', serviceId), {
+        publicCheckIn: true
+      });
+    } catch (error) {
+      // If update fails, QR still works for authenticated users
+    }
     
     // Generate QR code as data URL
     const qrCodeDataUrl = await QRCode.toDataURL(checkInUrl, {

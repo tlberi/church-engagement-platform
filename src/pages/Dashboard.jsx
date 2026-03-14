@@ -121,6 +121,14 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={() => navigate('/diagnostics')}
+            className="px-5 py-2.5 bg-white text-emerald-700 font-semibold rounded-xl border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all shadow-sm"
+          >
+            Open Diagnostics
+          </button>
+        </div>
       </div>
 
     </div>
